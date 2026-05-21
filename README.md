@@ -10,13 +10,44 @@ GoClub 是一个围绕技术面试准备与系统复习搭建的内容站点，�
 
 ## 如何提交内容
 
-如果你想给 GoClub 补充面试题、八股、配套文章，或者修正文档中的错误，可以按下面这套流程提交。
+如果你想给 GoClub 补充面试题、八股、配套文章、项目经验，或者修正文档中的错误，可以使用下面两种方式提交。
 
-### 1. Fork 仓库
+### 方式一：把内容交给 AI 添加（推荐）
+
+把原始内容交给支持读写仓库的 AI 编程工具，让 AI 按 GoClub 的项目规范完成整理、归档和目录更新。
+
+你可以直接使用下面这段提示词：
+
+```text
+请把下面内容添加到 GoClub 仓库中，并按项目规范处理：
+
+1. 判断内容属于哪个栏目，并放到 content/docs 对应目录。
+2. 新增 Markdown 页面时，补齐 title、weight 等必要 front matter。
+3. 新增页面后，同步更新对应目录下的 _index.md，让目录页能看到入口。
+4. 保持现有文章的标题层级、代码块、引用块和列表风格。
+5. 完成后运行 hugo --minify 检查构建结果。
+
+内容如下：
+
+<把你的面试题、八股总结、文章或修正文案贴在这里>
+```
+
+AI 处理完成后，重点检查这些内容：
+
+- 文件是否放在合适栏目
+- 新增页面是否出现在目录页
+- 标题、代码块、图片、链接是否正常
+- `git diff` 是否只包含本次贡献相关改动
+
+检查通过后，按下面“方式二”的第 6 步和第 7 步提交 Pull Request。
+
+### 方式二：手动添加并提交 PR
+
+#### 1. Fork 仓库
 
 先 Fork 这个仓库到你自己的 GitHub 账号下。
 
-### 2. Clone 到本地
+#### 2. Clone 到本地
 
 ```bash
 git clone --recursive https://github.com/<your-github-name>/GoClub.git
@@ -30,11 +61,11 @@ git submodule update --init --recursive
 ```
 
 > GoClub 的主题 `hugo-book` 是通过 Git submodule 管理的。  
-> 如果没有初始化子模块，`themes/hugo-book` 会是空目录，运行 `hugo server` 时会报找不到主题模板或布局文件。
+> 初始化子模块后，`themes/hugo-book` 会包含主题文件，`hugo server` 才能正常加载主题模板和布局文件。
 
-### 3. 新建分支
+#### 3. 新建分支
 
-不要直接在 `main` 上修改，先创建一个新分支：
+请在新分支上修改：
 
 ```bash
 git checkout -b docs/your-topic
@@ -48,18 +79,20 @@ docs/fix-companion-links
 docs/update-mysql-notes
 ```
 
-### 4. 添加或修改文档
+#### 4. 添加或修改文档
 
 把内容放到 `content/docs` 对应的栏目下面：
 
 - `content/docs/interview/`：面试真题
 - `content/docs/baguwen/`：八股总结
+- `content/docs/resources/`：资料、书籍、网站推荐
 - `content/docs/companion/`：配套文章
+- `content/docs/project-study/`：项目学习与项目拆解
 - `content/docs/blog/`：实践经验或技术记录
 
-如果你是新增页面，记得同步修改对应目录下的 `_index.md`，不然文章可能已经存在，但目录页里看不到入口。
+新增页面时，同步修改对应目录下的 `_index.md`，把新文章加入目录入口。
 
-### 5. 本地预览
+#### 5. 本地预览
 
 安装 Hugo 后，在项目根目录执行：
 
@@ -67,7 +100,7 @@ docs/update-mysql-notes
 hugo server
 ```
 
-如果这里提示找不到主题、模板，或者出现类似 `partial "docs/html-head" not found` 的报错，通常就是主题子模块还没拉下来，先执行：
+遇到主题、模板缺失，或者类似 `partial "docs/html-head" not found` 的报错时，先执行：
 
 ```bash
 git submodule update --init --recursive
@@ -86,7 +119,7 @@ http://localhost:1313/
 - 标题、图片、代码块、链接是否正常显示
 - 是否有明显错别字、断链或排版问题
 
-### 6. 提交代码并推送
+#### 6. 提交代码并推送
 
 ```bash
 git add .
@@ -94,7 +127,7 @@ git commit -m "docs: add your topic"
 git push origin docs/your-topic
 ```
 
-### 7. 发起 Pull Request
+#### 7. 发起 Pull Request
 
 回到 GitHub，在你 Fork 的仓库页面发起 PR，到上游仓库的 `main` 分支。
 
@@ -104,7 +137,7 @@ PR 描述里建议写清楚：
 - 文档放在哪个目录
 - 是否同步更新了对应目录的 `_index.md`
 
-### 8. 等待合并与部署
+#### 8. 等待合并与部署
 
 PR 被合并后，站点会通过 GitHub Actions 自动构建并发布。
 
@@ -147,7 +180,9 @@ content/
     _index.md          # 文档分区首页
     interview/         # 面试真题
     baguwen/           # 八股总结
+    resources/         # 资料、书籍、网站推荐
     companion/         # 配套文章
+    project-study/     # 项目学习与项目拆解
     blog/              # 技术博客与提交流程
 
 .github/workflows/
