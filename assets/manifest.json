@@ -1,0 +1,24 @@
+{{- $faviconPath := .Site.Params.BookFavicon | default "favicon.png" -}}
+{{- $faviconURL := $faviconPath | relURL -}}
+{{- $cacheKey := "" -}}
+{{- $staticPath := path.Join "static" $faviconPath -}}
+{{- if fileExists $staticPath -}}
+  {{- $cacheKey = substr (sha256 (readFile $staticPath)) 0 12 -}}
+{{- end -}}
+{{- $iconSrc := cond (eq $cacheKey "") $faviconURL (printf "%s?v=%s" $faviconURL $cacheKey) -}}
+{
+  "name": "{{ .Site.Title }}",
+  "short_name": "{{ .Site.Title }}",
+  "start_url": "{{ "./" | relURL }}",
+  "scope": "{{ "./" | relURL }}",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "{{ $iconSrc }}",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
