@@ -30,3 +30,9 @@ enableGitInfo = true
     inputPosition = 'bottom'
     theme = 'preferred_color_scheme'
     lang = 'zh-CN'
+
+[security]
+  allowContent = ['^text/html$', '^text/markdown$']
+  enableInlineShortcodes = false
+  [security.exec]
+    allow = ['^(dart-)?sass(-embedded)?$', '^go$', '^git$', '^node$', '^postcss$', '^tailwindcss$']
