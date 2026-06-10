@@ -1,0 +1,580 @@
+---
+title: "Nakamoto共识（Go语言）学习"
+description: "Nakamoto共识（Go语言）10天项目学习与面试问答工具"
+layout: "study-feed"
+bookSearchExclude: true
+BookComments: false
+BookToC: false
+aliases:
+  - /docs/blog/study-blockchain/
+---
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.png">
+<title>Nakamoto共识（Go语言）学习</title>
+<style>
+:root{
+  --bg:#fbf8ef;--bg2:#f2ead8;--bg3:#e4d6b8;--fg:#201a12;--fg2:#786a55;--fg3:#a99574;
+  --card:#fffaf0;--border:#e8dcc4;--accent:#b7791f;--accent2:#7c3f09;--accent-soft:#fff4d6;--accent-glow:rgba(183,121,31,.18);
+  --green:#1f9d72;--green-soft:#eaf8ef;--blue:#2563eb;--blue-soft:#eaf1ff;--warn:#d97706;--warn-soft:#fff7e8;--danger:#dc2626;--danger-soft:#fff1f1;
+  --code-bg:#fff7e6;--code-border:#ead9b5;--shadow-sm:0 1px 2px rgba(72,43,10,.06);--shadow-md:0 18px 48px rgba(72,43,10,.12);
+  --sidebar-w:292px;--topnav-h:58px;--radius:16px;--radius-sm:10px;
+  --font-body:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;--font-mono:'JetBrains Mono','Fira Code',Consolas,monospace;
+  --lv1:#1f9d72;--lv1-soft:#eaf8ef;--lv2:#2563eb;--lv2-soft:#eaf1ff;--lv3:#d97706;--lv3-soft:#fff7e8;
+  --noise:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]{
+  --bg:#101010;--bg2:#181510;--bg3:#282116;--fg:#fff8ea;--fg2:#c8b99c;--fg3:#917f5c;
+  --card:#19150f;--border:#2d2417;--accent:#f3b13f;--accent2:#d97706;--accent-soft:#31200a;--accent-glow:rgba(243,177,63,.14);
+  --green-soft:#062b20;--blue-soft:#0c1a38;--warn-soft:#2f1c04;--danger-soft:#320b0b;--code-bg:#20170a;--code-border:#36250e;--shadow-sm:0 1px 2px rgba(0,0,0,.4);--shadow-md:0 20px 60px rgba(0,0,0,.42);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:
+  radial-gradient(circle at 14% 8%,rgba(243,177,63,.20),transparent 28%),
+  radial-gradient(circle at 86% 14%,rgba(37,99,235,.13),transparent 30%),
+  linear-gradient(180deg,var(--bg),#fffdf7 52%,var(--bg));
+  color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.7;transition:background .25s,color .25s}
+[data-theme="dark"] body{background:
+  radial-gradient(circle at 16% 8%,rgba(243,177,63,.16),transparent 30%),
+  radial-gradient(circle at 86% 14%,rgba(37,99,235,.12),transparent 34%),
+  linear-gradient(180deg,#0b0b0b,#11100d 52%,#080807)}
+body::before{content:'';position:fixed;inset:0;background:var(--noise);pointer-events:none;z-index:9999;opacity:.48;mix-blend-mode:multiply}
+[data-theme="dark"] body::before{opacity:.16;mix-blend-mode:screen}
+a{color:var(--accent);text-decoration:none}
+button{border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--fg3);border-radius:10px}
+.topnav{height:var(--topnav-h);display:flex;align-items:center;gap:10px;padding:0 20px;background:rgba(255,250,240,.82);border-bottom:1px solid rgba(255,255,255,.78);box-shadow:0 18px 55px rgba(72,43,10,.10);backdrop-filter:blur(24px) saturate(1.25);position:sticky;top:0;z-index:100}
+[data-theme="dark"] .topnav{background:rgba(18,15,10,.78);border-color:rgba(255,255,255,.09);box-shadow:0 18px 55px rgba(0,0,0,.38)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;white-space:nowrap}
+.brand-icon{width:34px;height:34px;border-radius:12px;background:linear-gradient(145deg,#ffe8a3,#f3b13f);display:grid;place-items:center;box-shadow:0 8px 20px var(--accent-glow);overflow:hidden}
+.brand-icon svg{width:30px;height:30px}
+.brand-text{font-size:15px;font-weight:900}.brand-sub{font-size:11px;color:var(--fg3);margin-left:4px}
+.mode-tabs{display:flex;background:rgba(255,255,255,.44);border:1px solid rgba(255,255,255,.70);border-radius:12px;padding:4px;gap:2px;box-shadow:0 1px 0 rgba(255,255,255,.75) inset}
+[data-theme="dark"] .mode-tabs{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.10)}
+.mode-btn{padding:6px 13px;border-radius:9px;font-size:13px;font-weight:850;color:var(--fg2);transition:all .18s}
+.mode-btn:hover{background:var(--accent-soft);color:var(--accent)}
+.mode-btn.active{background:linear-gradient(180deg,#2f2515,#14100a);color:#fff;box-shadow:0 12px 28px rgba(32,26,18,.22),0 1px 0 rgba(255,255,255,.22) inset}
+[data-theme="dark"] .mode-btn.active{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08))}
+.repo-link,.theme-btn,.search-box{background:rgba(255,255,255,.48);border:1px solid rgba(255,255,255,.76);box-shadow:0 1px 0 rgba(255,255,255,.62) inset,0 10px 24px rgba(72,43,10,.06);backdrop-filter:blur(18px)}
+[data-theme="dark"] .repo-link,[data-theme="dark"] .theme-btn,[data-theme="dark"] .search-box{background:rgba(255,255,255,.065);border-color:rgba(255,255,255,.10);box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 12px 30px rgba(0,0,0,.22)}
+.repo-link{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;color:var(--fg2);font-size:13px;font-weight:800;line-height:1;white-space:nowrap;transition:all .2s}
+.repo-link:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.search-wrap{position:relative}.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--fg3);pointer-events:none}
+.search-box{width:210px;padding:7px 12px 7px 32px;border-radius:10px;color:var(--fg);font-size:13px;outline:none;transition:all .2s}
+.search-box:focus{width:280px;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.theme-btn{width:34px;height:34px;border-radius:10px;color:var(--fg2);display:grid;place-items:center;font-size:16px}.theme-btn:hover{color:var(--accent)}
+.progress-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:var(--green-soft);border:1px solid rgba(31,157,114,.25);font-size:12px;font-weight:900;color:var(--green)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.app{display:flex;height:calc(100vh - var(--topnav-h));overflow:hidden;background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 48%,rgba(255,255,255,.10))}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:rgba(255,250,240,.66);border-right:1px solid rgba(255,255,255,.76);box-shadow:14px 0 44px rgba(72,43,10,.07),1px 0 0 rgba(255,255,255,.70) inset;backdrop-filter:blur(26px) saturate(1.25);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:3px}
+[data-theme="dark"] .sidebar{background:rgba(18,15,10,.68);border-color:rgba(255,255,255,.09);box-shadow:14px 0 46px rgba(0,0,0,.28)}
+.side-title{padding:10px 12px 8px;color:var(--fg3);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.side-item{position:relative;display:flex;align-items:center;gap:8px;min-height:36px;padding:8px 10px 8px 14px;border-radius:10px;color:var(--fg2);font-size:13px;font-weight:700;cursor:pointer;transition:all .18s}
+.side-item::before{content:'';position:absolute;left:6px;top:9px;bottom:9px;width:2px;border-radius:2px;background:transparent;transition:all .18s}
+.side-item:hover{background:rgba(255,255,255,.38);color:var(--fg);transform:translateX(1px)}
+[data-theme="dark"] .side-item:hover{background:rgba(255,255,255,.06)}
+.side-item.active{background:rgba(255,255,255,.64);color:var(--accent);font-weight:900;box-shadow:0 12px 26px rgba(183,121,31,.10),0 1px 0 rgba(255,255,255,.62) inset}
+[data-theme="dark"] .side-item.active{background:rgba(255,255,255,.08)}
+.side-item.active::before{top:7px;bottom:7px;background:linear-gradient(180deg,var(--accent),var(--accent2))}
+.side-main{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-size:10px;padding:1px 7px;border-radius:12px;background:rgba(32,26,18,.06);color:var(--fg3);font-weight:800;border:1px solid rgba(32,26,18,.06);flex-shrink:0}
+.side-item.active .badge{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.sub-list{margin-left:10px;padding-left:8px;border-left:1px solid var(--border);display:none}.sub-list.open{display:block}
+.sub-item{padding:6px 8px;border-radius:9px;font-size:12.5px;color:var(--fg3);cursor:pointer;line-height:1.45;margin:2px 0}
+.sub-item:hover{background:rgba(255,255,255,.34);color:var(--fg)}.sub-item.active{background:var(--accent-soft);color:var(--accent);font-weight:850}
+.main{flex:1;overflow-y:auto;padding:32px 40px 64px;background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.04))}
+.content-header{margin-bottom:24px;animation:fadeUp .35s ease}
+.content-header h1{font-size:27px;line-height:1.3;font-weight:950;background:linear-gradient(135deg,var(--fg) 50%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{margin-top:5px;color:var(--fg3);font-size:13px}
+.hero,.section-card,.panel,.quiz-item,.card-face,.search-result,.mentor-card,.score-card,.lv-block,.table{background:rgba(255,250,240,.72);border:1px solid rgba(255,255,255,.78);box-shadow:var(--shadow-md),0 1px 0 rgba(255,255,255,.82) inset;backdrop-filter:blur(22px) saturate(1.25);border-radius:var(--radius);animation:fadeUp .35s ease}
+[data-theme="dark"] .hero,[data-theme="dark"] .section-card,[data-theme="dark"] .panel,[data-theme="dark"] .quiz-item,[data-theme="dark"] .card-face,[data-theme="dark"] .search-result,[data-theme="dark"] .mentor-card,[data-theme="dark"] .score-card,[data-theme="dark"] .lv-block,[data-theme="dark"] .table{background:rgba(24,20,14,.68);border-color:rgba(255,255,255,.09);box-shadow:0 24px 68px rgba(0,0,0,.38),0 1px 0 rgba(255,255,255,.08) inset}
+.hero:hover,.section-card:hover,.panel:hover,.search-result:hover,.mentor-card:hover{border-color:rgba(183,121,31,.30);transform:translateY(-2px)}
+.hero{padding:32px 36px;margin-bottom:20px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-80px;top:-90px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(243,177,63,.32),transparent 70%)}
+.kicker{font-size:11px;font-weight:950;color:var(--accent);letter-spacing:.9px;text-transform:uppercase;margin-bottom:8px}
+.hero h2{font-size:29px;line-height:1.28;font-weight:950;margin-bottom:10px}.hero p{color:var(--fg2);font-size:14.5px;line-height:1.9;max-width:920px}
+.pill-row,.md-pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pill,.md-pill{padding:4px 10px;border-radius:20px;background:var(--accent-soft);border:1px solid var(--accent-glow);color:var(--accent);font-size:12px;font-weight:900}
+.mentor-strip,.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:0 0 20px}
+.mentor-card,.panel,.section-card{padding:22px 24px}
+.mentor-card strong{display:block;font-size:13px;font-weight:900;color:var(--fg);margin-bottom:5px}.mentor-card p{font-size:12.8px;color:var(--fg2);line-height:1.65;margin:0}
+.panel h3,.section-card h2{font-size:17px;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:8px}.panel h3::before,.section-card h2::before{content:'';width:3px;height:18px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px}
+.panel p,.section-card p{color:var(--fg2);font-size:14px;line-height:1.85;margin:8px 0}.panel ul,.section-card ul,.section-card ol{margin:8px 0 8px 20px;color:var(--fg2);font-size:14px}.panel li,.section-card li{margin:5px 0;line-height:1.75}
+.answer-framework,.score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0 4px}
+.framework-step,.score-card,.source-item,pre,.timer,.table th{background:rgba(255,255,255,.50);border:1px solid rgba(255,255,255,.78);box-shadow:0 1px 0 rgba(255,255,255,.62) inset}
+[data-theme="dark"] .framework-step,[data-theme="dark"] .score-card,[data-theme="dark"] .source-item,[data-theme="dark"] pre,[data-theme="dark"] .timer,[data-theme="dark"] .table th{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.10);box-shadow:0 1px 0 rgba(255,255,255,.08) inset}
+.framework-step{border-radius:10px;padding:10px 12px;color:var(--accent);font-size:12.5px;font-weight:900;line-height:1.45}
+.score-card{padding:12px 14px;border-radius:10px}.score-card strong{display:block;font-size:13px;color:var(--fg);margin-bottom:4px}.score-card p{font-size:12.8px;color:var(--fg2);line-height:1.6;margin:0}
+.microcopy{margin-top:10px;padding:11px 13px;border-radius:10px;background:var(--blue-soft);border-left:3px solid var(--blue);font-size:13px;color:var(--fg2);line-height:1.7}
+.source-list{display:flex;flex-direction:column;gap:8px}.source-item{padding:9px 10px;border-radius:10px;font-family:var(--font-mono);font-size:12px;color:var(--fg2);line-height:1.45;word-break:break-all}
+.checkline{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--fg2)}.checkline:last-child{border-bottom:0}.checkline span:first-child{width:18px;height:18px;border-radius:6px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-size:11px;font-weight:950;flex-shrink:0;margin-top:2px}
+.markdown-doc{max-width:960px;margin:0 auto;background:rgba(255,250,240,.78);border:1px solid rgba(255,255,255,.82);border-radius:var(--radius);box-shadow:var(--shadow-md),0 1px 0 rgba(255,255,255,.82) inset;padding:36px 42px;position:relative;overflow:hidden;animation:fadeUp .35s;backdrop-filter:blur(26px) saturate(1.24)}
+[data-theme="dark"] .markdown-doc{background:rgba(24,20,14,.72);border-color:rgba(255,255,255,.10)}
+.markdown-doc h1{font-size:32px;line-height:1.25;font-weight:950;color:var(--fg);margin:4px 0 12px}.markdown-doc h2{font-size:21px;line-height:1.35;font-weight:900;color:var(--fg);margin:32px 0 12px;padding-top:18px;border-top:1px solid var(--border)}.markdown-doc h3{font-size:15px;font-weight:900;color:var(--fg);margin:18px 0 8px}
+.markdown-doc p{font-size:15px;color:var(--fg2);line-height:1.9;margin:10px 0}.markdown-doc ul,.markdown-doc ol{margin:10px 0 10px 22px;color:var(--fg2);font-size:14.5px;line-height:1.85}.markdown-doc li{margin:5px 0}
+.markdown-doc blockquote{margin:18px 0;padding:12px 16px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0;color:var(--fg2)}
+.md-kicker{font-size:11px;font-weight:950;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.md-section{padding:2px 0 12px;border-radius:10px;transition:all .2s}.md-section.active{background:linear-gradient(90deg,rgba(183,121,31,.13),rgba(37,99,235,.06),transparent 78%);padding-left:16px;margin-left:-16px;box-shadow:inset 3px 0 0 var(--accent)}
+.lv-block{margin:12px 0;overflow:hidden;border-radius:12px}.lv-block.lv1{border-left:4px solid var(--lv1)}.lv-block.lv2{border-left:4px solid var(--lv2)}.lv-block.lv3{border-left:4px solid var(--lv3)}
+.lv-header{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:14px;font-weight:900;cursor:pointer;user-select:none}.lv-block.lv1 .lv-header{background:var(--lv1-soft);color:var(--lv1)}.lv-block.lv2 .lv-header{background:var(--lv2-soft);color:var(--lv2)}.lv-block.lv3 .lv-header{background:var(--lv3-soft);color:var(--lv3)}
+.lv-arrow{font-size:10px;transition:transform .2s;color:var(--fg3)}.lv-header.open .lv-arrow{transform:rotate(90deg)}.lv-tag{font-size:10px;padding:2px 8px;border-radius:10px;color:#fff;letter-spacing:.5px;text-transform:uppercase}.lv1 .lv-tag{background:var(--lv1)}.lv2 .lv-tag{background:var(--lv2)}.lv3 .lv-tag{background:var(--lv3)}
+.lv-body{max-height:0;overflow:hidden;transition:max-height .34s cubic-bezier(.4,0,.2,1);padding:0 16px}.lv-body.open{max-height:4200px;padding:0 16px 16px}.lv-body p,.lv-body li{color:var(--fg2);font-size:14px;line-height:1.85}.lv-body ul,.lv-body ol{margin:8px 0 8px 20px}.lv-body strong{color:var(--fg)}
+code.inline,.markdown-doc code{font-family:var(--font-mono);font-size:12.5px;color:var(--accent);background:var(--code-bg);border:1px solid var(--code-border);border-radius:5px;padding:2px 6px}
+pre{border-radius:12px;padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;margin:12px 0;color:var(--fg)}
+.quiz-item{margin:10px 0;overflow:hidden}.quiz-q{padding:14px 18px;display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-weight:850;font-size:14px}.quiz-q:hover{background:rgba(255,255,255,.28)}
+.q-num{width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:11px;flex-shrink:0}.q-text{flex:1}.q-toggle{font-size:10px;color:var(--fg3);margin-top:6px;transition:transform .2s}.q-toggle.open{transform:rotate(90deg)}
+.quiz-body{max-height:0;overflow:hidden;transition:max-height .28s}.quiz-body.open{max-height:900px}.quiz-hint{margin:0 18px 14px;padding:14px 16px;background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:10px;font-size:13.5px;color:var(--fg2);line-height:1.75}
+.quiz-btns{display:flex;gap:8px;margin:0 18px 14px}.quiz-btn{padding:5px 14px;border-radius:9px;font-size:12px;font-weight:900;color:#fff}.quiz-btn.mastered{background:var(--green)}.quiz-btn.review{background:var(--warn)}
+.quiz-status{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:900;margin-top:3px}.status-mastered{background:var(--green-soft);color:var(--green);border:1px solid rgba(31,157,114,.22)}.status-review{background:var(--warn-soft);color:var(--warn);border:1px solid rgba(217,119,6,.22)}
+.nav-bar{display:flex;justify-content:space-between;gap:12px;margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.nav-btn,.tool-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:900;border:1px solid var(--border);color:var(--fg2);transition:all .2s;box-shadow:0 10px 24px rgba(72,43,10,.08),0 1px 0 rgba(255,255,255,.55) inset}
+.nav-btn:hover,.tool-btn:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}.nav-btn.primary,.tool-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 14px 30px var(--accent-glow),0 1px 0 rgba(255,255,255,.24) inset}.nav-btn.primary:hover,.tool-btn.primary:hover{background:var(--accent2);color:#fff}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}.timer{font-family:var(--font-mono);font-size:21px;font-weight:900;letter-spacing:1px;color:var(--accent);border-radius:10px;padding:4px 12px;min-width:88px;text-align:center}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:16px}.card{perspective:1200px;height:330px;cursor:pointer;animation:fadeUp .3s ease}.card-inner{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}.card.flipped .card-inner{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;overflow:auto}.card-front{padding:20px;display:flex;flex-direction:column}.card-back{transform:rotateY(180deg);padding:18px;font-size:13px}.card-idx{font-size:11px;font-weight:950;color:var(--fg3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}.card-title{font-size:15px;font-weight:900;line-height:1.6;flex:1}.card-tag{align-self:flex-start;margin-top:12px;padding:3px 10px;border-radius:16px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:950}
+.card-back h4{font-size:12px;font-weight:950;color:var(--accent);margin:10px 0 4px;letter-spacing:.5px;text-transform:uppercase}.card-back h4:first-child{margin-top:0}.card-back p{font-size:13px;color:var(--fg2);line-height:1.75}.code-link{font-family:var(--font-mono);font-size:12px;color:var(--fg3);word-break:break-all}
+.card-actions{display:flex;gap:8px;margin-top:12px;border-top:1px solid var(--border);padding-top:10px}.card-action{padding:5px 12px;border-radius:9px;font-size:11px;font-weight:950;color:#fff}.card-action.practice{background:var(--green)}.card-action.review{background:var(--warn)}
+.table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;font-size:13.5px}.table th{color:var(--fg3);text-align:left;padding:10px 14px;font-size:12px;text-transform:uppercase}.table td{padding:10px 14px;border-top:1px solid var(--border);color:var(--fg2);vertical-align:top}
+.search-result{padding:14px 18px;margin:8px 0;cursor:pointer}.search-result:hover{border-color:var(--accent)}.sr-mode{font-size:10px;font-weight:950;color:var(--accent);letter-spacing:.6px;text-transform:uppercase}.sr-title{font-size:14px;font-weight:900;color:var(--fg);margin-top:2px}.sr-snippet{font-size:13px;color:var(--fg3);line-height:1.55;margin-top:4px}mark{background:var(--accent-glow);color:var(--accent);border-radius:3px;padding:1px 3px;font-weight:900}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1080px){.search-box{width:170px}.search-box:focus{width:220px}.main{padding:24px}.card-grid{grid-template-columns:1fr}}
+@media(max-width:760px){
+  body::before{display:none}.topnav{height:auto;min-height:var(--topnav-h);padding:10px 12px;flex-direction:column;align-items:stretch}.brand{width:100%;margin-right:0}.brand-sub{display:none}.mode-tabs{flex-direction:column}.mode-btn{width:100%;padding:8px 10px}.repo-link{justify-content:center}.search-box,.search-box:focus{width:100%}.app{display:block;height:auto;min-height:calc(100dvh - 180px)}.sidebar{display:none}.main{padding:16px 14px 48px}.hero,.section-card,.panel,.markdown-doc{padding:18px 16px}.hero h2{font-size:23px}.content-header h1{font-size:22px}.grid,.mentor-strip{grid-template-columns:1fr}.nav-bar{flex-direction:column}.nav-btn{width:100%}.card{height:390px}.quiz-q{padding:12px}.quiz-btns{flex-direction:column}.quiz-btn{width:100%;padding:8px 12px}.table{display:block;overflow:auto;white-space:nowrap}
+}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <div class="brand">
+    <div class="brand-icon" aria-label="Blockchain">
+      <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
+        <rect x="9" y="10" width="18" height="18" rx="5" fill="#201a12" opacity=".92"/>
+        <rect x="37" y="10" width="18" height="18" rx="5" fill="#201a12" opacity=".82"/>
+        <rect x="23" y="36" width="18" height="18" rx="5" fill="#201a12" opacity=".72"/>
+        <path d="M27 19h10M46 28l-9 8M23 36l-7-8" fill="none" stroke="#fff4d6" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div><span class="brand-text">Nakamoto共识</span><span class="brand-sub">（Go语言）学习</span></div>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-btn active" data-mode="intro" onclick="switchMode('intro')">前言</button>
+    <button class="mode-btn" data-mode="learn" onclick="switchMode('learn')">知识学习</button>
+    <button class="mode-btn" data-mode="breakdown" onclick="switchMode('breakdown')">项目拆解</button>
+    <button class="mode-btn" data-mode="interview" onclick="switchMode('interview')">面试模拟</button>
+    <button class="mode-btn" data-mode="scenario" onclick="switchMode('scenario')">场景还原</button>
+  </div>
+  <a class="repo-link" href="https://github.com/Kunyanli230/Learn_ProofOfWork" target="_blank" rel="noopener">GitHub 仓库</a>
+  <div class="search-wrap"><span class="search-icon">⌕</span><input id="searchInput" class="search-box" type="text" placeholder="搜索内容..." oninput="handleSearch(this.value)"></div>
+  <button class="theme-btn" onclick="toggleTheme()" title="切换主题"><span id="themeIcon">☽</span></button>
+  <div class="progress-pill"><span class="dot"></span><span id="progressText">0/10</span></div>
+</div>
+<div class="app" id="app"></div>
+<script>
+const STORE="study-blockchain-progress-v1";
+const S={mode:"intro",sec:0,ch:0,topic:0,dim:0,q:""};
+
+const introData={
+  title:"Nakamoto共识（Go语言）10天项目学习",
+  desc:"从 Block 结构开始，用 10 个渐进步骤构建一个比特币式区块链系统。页面把原始文档拆成前言、知识学习、项目拆解、面试模拟和场景还原，目标是让你既能写出项目，也能把 PoW、UTXO、Merkle 树、P2P 同步和 Nakamoto 共识讲清楚。",
+  pillars:[
+    {title:"项目介绍",text:"这是一个 Go 语言实现的 Nakamoto 共识教学项目。代码从最小区块链起步，逐步加入 PoW、gob 序列化、BoltDB 持久化、CLI、UTXO 交易、钱包、Merkle 树和 P2P 网络，最后形成一条能同步、能交易、能解释共识规则的链。"},
+    {title:"前置要求",text:"建议具备 Go 基础语法、哈希、序列化、KV 存储、命令行参数、ECDSA、TCP 网络和基础数据结构。区块链背景可以在学习过程中补齐。"},
+    {title:"Level 1：能跑能演示",text:"能启动节点，创建钱包，生成创世区块，发起交易，同步区块，看到完整链路输出。"},
+    {title:"Level 2：面试级理解",text:"能讲清区块结构、PoW 挖矿、UTXO、Merkle 树、P2P 消息和最长链规则。"},
+    {title:"Level 3：抗追问能力",text:"能回答 targetBit、双花、分叉、网络分区、51% 攻击、地址校验和 SPV 证明等追问。"},
+    {title:"Level 4：可独立复刻",text:"能关掉文档，从零复刻 Block、PoW、BoltDB、Transaction、Wallet、MerkleTree 和 P2P 网络。"},
+    {title:"Level 5：分布式共识大师",text:"能把 Nakamoto 共识抽象成 PoW、最长链、概率最终性和开放网络安全模型。"},
+    {title:"学习方法",text:"先看前言建立地图，再逐章学知识点，用 10 天项目拆解追源码，最后用面试卡片和场景题训练表达。"},
+    {title:"最终产出",text:"学完后形成一张 Nakamoto 共识链路图、一份 10 步复刻路线、15 道高频追问答案、5 条简历亮点和一套共识系统回答框架。"}
+  ],
+  prerequisites:["Go 基础语法与错误处理","crypto/sha256 哈希计算","encoding/gob 序列化","BoltDB 嵌入式 KV 数据库","flag 命令行参数解析","ECDSA 椭圆曲线签名","net 包 TCP 网络编程","链表、树、哈希等基础数据结构"],
+  levels:[
+    {title:"Level 1：能跑能演示",standard:"能从零写 Block + Blockchain 并输出区块信息。",proof:"能画出 Block 结构体和链式连接关系。",next:"加入 PoW 挖矿。"},
+    {title:"Level 2：面试级理解",standard:"能把项目讲成 Block → PoW → BoltDB → CLI → UTXO 的工程演化。",proof:"能回答每个模块为什么需要前一个模块。",next:"准备 UTXO、签名和网络同步追问。"},
+    {title:"Level 3：抗追问能力",standard:"能解释网络分区时节点如何重新同步。",proof:"能把回答落到源码入口：handleVersion、handleInv、sendBlock。",next:"把核心模块背到可以复刻。"},
+    {title:"Level 4：可独立复刻",standard:"能从零写出最小可运行区块链系统。",proof:"能还原目录结构、Block 结构体、PoW 验证和 P2P 协议。",next:"抽象成分布式共识设计框架。"},
+    {title:"Level 5：分布式共识大师",standard:"能从项目上升到通用异步共识方法论。",proof:"能主动讨论 PoW、最长链、概率最终性和 51% 攻击。",next:"进入异步 BFT 学习。"}
+  ],
+  method:[
+    {title:"先跑通",text:"用 CLI 跑出区块、交易和节点同步，先获得系统手感。"},
+    {title:"再拆层",text:"按数据结构、共识、存储、交易、密码学、网络六条线拆源码。"},
+    {title:"追链路",text:"把 createblockchain、addblock、send、printchain、node sync 串成端到端流程。"},
+    {title:"背表达",text:"每个知识点都整理成 Level 1 概念、Level 2 源码、Level 3 追问。"},
+    {title:"画图复盘",text:"用图表达区块连接、PoW 目标、UTXO 消费、Merkle Proof 和 P2P 同步。"},
+    {title:"面试冲刺",text:"把项目介绍、源码入口、故障场景和扩展方案练到可以稳定输出。"}
+  ],
+  answerFrame:["一句话结论","项目位置","源码入口","核心机制","安全边界","追问扩展"],
+  scorecard:[
+    {title:"链路完整",text:"能从命令行入口追到数据存储和网络同步。"},
+    {title:"源码可信",text:"每个结论都能指到核心文件、结构体和函数。"},
+    {title:"机制清楚",text:"能解释 PoW、UTXO、Merkle、P2P 的安全意义。"},
+    {title:"追问稳",text:"能处理分叉、双花、网络分区和 51% 攻击问题。"}
+  ],
+  outputs:["Bitcoin/Nakamoto 核心链路图","Block + PoW + UTXO 关系图","5 条简历亮点","15 道高频面试追问答案","10 步复刻路线图","Nakamoto 共识通用回答框架"]
+};
+
+const learnData=[
+  {title:"第1章：区块与链",topics:[
+    {q:"Block 结构体包含哪些字段？每个字段的作用是什么？",lv1:`<p>区块是区块链的最小存储单元，核心字段包括 Height、PrevBlockHash、Data、Timestamp 和 Hash。Height 表示高度，PrevBlockHash 负责连接前一个区块，Data 保存交易或业务数据，Timestamp 记录创建时间，Hash 是当前区块内容摘要。</p>`,lv2:`<p>源码入口在 <code class="inline">001-block/core/Block.go</code>。<code class="inline">SetHash()</code> 会拼接区块高度、前一区块哈希、数据和时间戳，再计算 SHA256。<code class="inline">Blockchain</code> 初期用 <code class="inline">[]*Block</code> 在内存中保存有序区块。</p>`,lv3:`<p><strong>追问方向：</strong>创世区块的 PrevBlockHash 为什么使用全 0？修改历史区块会如何影响后续 Hash？为什么 Hash 应由内容计算得到？</p>`},
+    {q:"Blockchain 的 AddBlocktoBlockchain 方法做了什么？",lv1:`<p>它负责把新数据打包成区块，并追加到链尾。核心动作是找到最后一个区块，取出高度和 Hash，调用 NewBlock 创建新区块，然后 append 到 Blocks 切片。</p>`,lv2:`<p>源码入口在 <code class="inline">001-block/core/Blockchain.go</code>。早期版本的链只存在内存中，重启后数据会丢失，这为后面引入 BoltDB 持久化埋下伏笔。</p>`,lv3:`<p><strong>追问方向：</strong>追加区块前要验证哪些信息？内存切片模型为什么足够支撑第一步教学？持久化版本如何替换这个结构？</p>`}
+  ],quiz:[
+    {q:"Block 的五个核心字段是什么？",hint:"Height、PrevBlockHash、Data、Timestamp、Hash。"},
+    {q:"为什么修改历史区块会破坏整条链？",hint:"后一区块保存的是前一区块 Hash，历史数据变化会造成后续 PrevBlockHash 失配。"},
+    {q:"第一版 Blockchain 为什么重启后会丢数据？",hint:"它使用内存切片保存区块，进程退出后内存状态清空。"}
+  ]},
+  {title:"第2章：工作量证明（PoW）",topics:[
+    {q:"PoW 的核心原理是什么？targetBit 的作用是什么？",lv1:`<p>PoW 的目标是找到一个 nonce，使区块哈希小于目标值 target。targetBit 表示目标难度的位数，targetBit 越大，目标值越小，找到有效 Hash 的难度越高。</p>`,lv2:`<p>源码入口在 <code class="inline">002-PoW/core/ProofOfWork.go</code>。<code class="inline">Run()</code> 从 nonce=0 开始循环，拼接区块字段和 nonce，计算 SHA256，并用大整数比较 <code class="inline">hashInt &lt; target</code>。</p>`,lv3:`<p><strong>追问方向：</strong>挖矿难、验证快体现在哪里？targetBit=16 平均要尝试多少次？Bitcoin 的难度如何动态调整？</p>`},
+    {q:"prepareData 拼接了哪些数据？Nonce 在哪里？",lv1:`<p>prepareData 会把区块高度、前一区块 Hash、数据、时间戳、targetBit 和 nonce 拼在一起，生成待哈希字节数组。nonce 是矿工持续变化的试探值。</p>`,lv2:`<p>源码中 nonce 通常作为 <code class="inline">Run()</code> 循环变量传入 <code class="inline">prepareData(nonce)</code>。同一个区块内容下，nonce 的变化会产生完全不同的 SHA256 输出。</p>`,lv3:`<p><strong>追问方向：</strong>为什么 nonce 要进入哈希输入？如果 nonce 溢出怎么办？真实 Bitcoin 还会改变哪些字段继续搜索？</p>`}
+  ],quiz:[
+    {q:"PoW 验证为什么比挖矿快？",hint:"挖矿需要大量试 nonce；验证只计算一次哈希并比较 target。"},
+    {q:"targetBit 增大意味着什么？",hint:"target 变小，有效 Hash 区间变窄，挖矿更难。"},
+    {q:"nonce 的作用是什么？",hint:"给矿工提供可变输入，让同一块数据可以产生不同 Hash。"}
+  ]},
+  {title:"第3章：序列化",topics:[
+    {q:"为什么需要 Blocks 序列化？gob 是什么？",lv1:`<p>区块需要写入磁盘和通过网络传输，内存对象需要转成字节数组。gob 是 Go 标准库提供的二进制编码格式，适合 Go 结构体之间的 encode/decode。</p>`,lv2:`<p>源码入口在 <code class="inline">003-Serialize/core/Block.go</code>。<code class="inline">Serialize()</code> 使用 <code class="inline">gob.NewEncoder</code> 把 Block 写入 buffer；<code class="inline">DeserializeBlock()</code> 使用 <code class="inline">gob.NewDecoder</code> 还原对象。</p>`,lv3:`<p><strong>追问方向：</strong>gob 的跨语言能力怎样？生产区块链为什么偏向 protobuf 或自定义编码？序列化字段变化如何兼容旧数据？</p>`}
+  ],quiz:[
+    {q:"序列化解决了什么问题？",hint:"把内存结构转成可存储、可传输的字节。"},
+    {q:"gob 的优势是什么？",hint:"Go 原生、使用简单、适合教学项目。"},
+    {q:"反序列化失败通常说明什么？",hint:"字节损坏、结构体字段变化或类型不匹配。"}
+  ]},
+  {title:"第4章：持久化存储（BoltDB）",topics:[
+    {q:"BoltDB 如何替换内存存储？Blockchain 结构发生了什么变化？",lv1:`<p>BoltDB 把区块从内存切片迁移到本地 KV 存储。区块 Hash 作为 key，序列化后的 Block 作为 value，特殊 key <code class="inline">l</code> 保存最新区块 Hash。</p>`,lv2:`<p>源码入口在 <code class="inline">004-Persistence/core/Blockchain.go</code>。<code class="inline">Blockchain</code> 不再保存完整 Blocks 切片，而是保存 <code class="inline">Tip []byte</code> 和 <code class="inline">Db *bolt.DB</code>。</p>`,lv3:`<p><strong>追问方向：</strong>BoltDB 的事务模型是什么？key=l 为什么能快速定位链头？如果数据库损坏如何恢复？</p>`},
+    {q:"BlockchainIterator 是如何工作的？",lv1:`<p>迭代器从 Tip 开始，读取当前区块，取出 PrevBlockHash，再继续读取前一个区块，直到创世区块。它用反向遍历还原整条链。</p>`,lv2:`<p>源码入口在 <code class="inline">004-Persistence/core/Blockchainiterator.go</code>。迭代器保存 <code class="inline">CurrentHash</code> 和 DB 引用，每次 <code class="inline">Next()</code> 在 BoltDB 只读事务中查当前 Hash。</p>`,lv3:`<p><strong>追问方向：</strong>反向遍历的时间复杂度是多少？如果需要按高度正向遍历，索引如何设计？</p>`}
+  ],quiz:[
+    {q:"BoltDB 中 key='l' 保存什么？",hint:"最新区块 Hash，也就是 Tip。"},
+    {q:"Iterator 为什么从 Tip 往前走？",hint:"每个区块保存 PrevBlockHash，可以天然反向遍历。"},
+    {q:"Blockchain 结构体持久化后主要保存什么？",hint:"Tip 和 DB 连接。"}
+  ]},
+  {title:"第5章：命令行接口（CLI）",topics:[
+    {q:"CLI 模块的设计思路是什么？flag 包如何实现子命令？",lv1:`<p>CLI 把底层区块链能力暴露成命令，例如 createblockchain、addblock、printchain。用户通过命令行参数触发不同分支，方便演示和测试。</p>`,lv2:`<p>源码入口在 <code class="inline">005-CLI/cli/CLI.go</code>。Go 标准库 <code class="inline">flag.NewFlagSet</code> 可以为每个子命令维护独立参数解析逻辑。</p>`,lv3:`<p><strong>追问方向：</strong>CLI 如何组织命令帮助？参数校验放在哪里？真实节点命令和 RPC 接口如何分工？</p>`}
+  ],quiz:[
+    {q:"CLI 在这个项目中的价值是什么？",hint:"把链的能力变成可操作、可演示、可测试的入口。"},
+    {q:"flag.NewFlagSet 适合做什么？",hint:"为每个子命令建立独立参数集合。"},
+    {q:"printchain 通常依赖哪个模块？",hint:"BlockchainIterator。"}
+  ]},
+  {title:"第6章：持久化 + CLI 整合",topics:[
+    {q:"整合后的项目目录结构和依赖关系是什么？",lv1:`<p>整合后，main 负责启动 CLI，CLI 调用 Blockchain，Blockchain 通过 BoltDB 存储区块，Block 通过序列化进出数据库。目录结构开始体现模块边界。</p>`,lv2:`<p>常见入口是 <code class="inline">main.go → cli.CLI.Run() → core.NewBlockchain()</code>。createblockchain 初始化数据库和创世区块；addblock 读取 Tip 后挖矿并更新 key=l；printchain 通过迭代器输出。</p>`,lv3:`<p><strong>追问方向：</strong>如何处理数据库重复初始化？如何让 CLI 命令有幂等性？如果多个进程同时写 BoltDB 会怎样？</p>`}
+  ],quiz:[
+    {q:"createblockchain 主要做什么？",hint:"创建 blocks bucket，写入创世区块，设置 Tip。"},
+    {q:"addblock 的核心路径是什么？",hint:"读取 Tip → 创建新区块 → PoW → 序列化 → 写入 DB → 更新 key=l。"},
+    {q:"printchain 如何拿到所有区块？",hint:"从 Tip 开始用 Iterator 反向遍历。"}
+  ]},
+  {title:"第7章：UTXO 交易模型",topics:[
+    {q:"UTXO 模型和 Account 模型有什么区别？",lv1:`<p>UTXO 模型没有全局余额字段，余额来自一组尚未花费的输出。Account 模型维护账户余额表。UTXO 更像现金，Account 更像银行账户。</p>`,lv2:`<p>源码入口在 <code class="inline">007-transaction/core/Transaction.go</code>。交易包含输入 Vin 和输出 Vout，输入引用历史交易输出，输出锁定给新的接收者。</p>`,lv3:`<p><strong>追问方向：</strong>UTXO 如何天然防双花？为什么适合并行验证？Ethereum 为什么采用 Account 模型？</p>`},
+    {q:"FindSpendableUTXOs 方法的逻辑是什么？",lv1:`<p>它扫描链上交易，找出属于当前地址且尚未被花费的输出，累计金额直到满足转账需要。找到的输出会作为新交易的输入。</p>`,lv2:`<p>实现上通常需要同时维护已花费输出集合，遍历交易时先跳过已消费输出，再匹配可用输出。Coinbase 交易作为挖矿奖励是 UTXO 的来源。</p>`,lv3:`<p><strong>追问方向：</strong>全链扫描性能如何优化？UTXO Set 可以怎样维护？找零输出为什么需要回到自己地址？</p>`}
+  ],quiz:[
+    {q:"UTXO 的 U 指什么？",hint:"Unspent，尚未花费。"},
+    {q:"一笔普通交易为什么需要找零？",hint:"UTXO 通常整体消费，多余金额要作为新输出返还给自己。"},
+    {q:"Coinbase 交易的特殊性是什么？",hint:"它没有真实输入，是区块奖励来源。"}
+  ]},
+  {title:"第8章：钱包（Wallet）",topics:[
+    {q:"钱包地址是如何生成的？Base58 编码的作用是什么？",lv1:`<p>钱包先生成 ECDSA 密钥对，再对公钥做 SHA256 和 RIPEMD160，加入版本号和校验和，最后用 Base58 编码成人类可读地址。</p>`,lv2:`<p>源码入口在 <code class="inline">008-Wallet/crypto/wallet.go</code>。Base58 去掉了 0/O/I/l 等易混淆字符，双 SHA256 取前 4 字节作为校验和，用于发现输入错误。</p>`,lv3:`<p><strong>追问方向：</strong>私钥、公钥、地址三者关系是什么？地址为什么可以公开？校验和能防什么错误？</p>`},
+    {q:"Wallets 集合如何管理多个钱包？gob 序列化有什么坑？",lv1:`<p>Wallets 用 map 保存多个地址到钱包对象的映射，并序列化到本地文件。它让 CLI 可以创建和列出多个地址。</p>`,lv2:`<p>ECDSA 私钥里有未导出字段，gob 直接编码可能遇到字段不可导出问题。教学项目通常需要注册类型或自定义序列化策略。</p>`,lv3:`<p><strong>追问方向：</strong>钱包文件如何加密？助记词和私钥是什么关系？私钥泄露后为什么资产会丢失？</p>`}
+  ],quiz:[
+    {q:"钱包地址来自私钥还是公钥？",hint:"由公钥哈希和版本/校验信息编码而来。"},
+    {q:"Base58 的用户体验价值是什么？",hint:"减少易混淆字符，提高复制和阅读可靠性。"},
+    {q:"私钥需要如何保存？",hint:"本地加密保存，备份要安全。"}
+  ]},
+  {title:"第9章：Merkle 树",topics:[
+    {q:"Merkle 树的结构和用途是什么？",lv1:`<p>Merkle 树把所有交易哈希组织成二叉树，叶子是交易 Hash，父节点是左右子节点拼接后的 Hash，根节点写入区块头。任何交易变化都会改变 Merkle Root。</p>`,lv2:`<p>源码入口在 <code class="inline">009-MerkleTree/core/merkle_tree.go</code>。奇数个叶子时复制最后一个节点补齐成对。构建过程逐层向上，直到得到根节点。</p>`,lv3:`<p><strong>追问方向：</strong>SPV 节点如何用 O(log N) 哈希验证交易存在？Merkle Proof 中兄弟节点顺序为什么重要？</p>`}
+  ],quiz:[
+    {q:"Merkle Root 写在哪里？",hint:"写入区块头或区块结构中，代表交易集合摘要。"},
+    {q:"奇数个叶子节点如何处理？",hint:"复制最后一个叶子节点再组合。"},
+    {q:"SPV 验证为什么轻量？",hint:"只需要区块头和一条 Merkle 路径。"}
+  ]},
+  {title:"第10章：P2P 网络与 Nakamoto 共识",topics:[
+    {q:"多节点通信包含哪些协议命令？",lv1:`<p>核心协议包含 version、inv、getblocks、getdata 和 block。version 交换高度，inv 广播哈希清单，getblocks 请求哈希列表，getdata 请求具体区块，block 发送完整区块。</p>`,lv2:`<p>源码入口在 <code class="inline">010-network/network/Server.go</code>、<code class="inline">Server_send.go</code> 和 <code class="inline">Server_handle.go</code>。消息通常包含固定长度 command + gob 编码 payload。</p>`,lv3:`<p><strong>追问方向：</strong>为什么 P2P 需要先传 inv 再传 block？如何处理消息乱序、重复和断线重连？</p>`},
+    {q:"Nakamoto 共识的三个核心规则是什么？",lv1:`<p>Nakamoto 共识可以概括为 PoW 出块、最长链选择和概率最终性。节点用算力竞争出块，用累计工作量最大的链作为主链，确认数越多交易越安全。</p>`,lv2:`<p>项目用节点高度和区块同步模拟最长链收敛。真实系统比较的是累计工作量，最长链表达的是工作量最大链。网络分区恢复后，节点会切换到工作量更大的分支。</p>`,lv3:`<p><strong>追问方向：</strong>51% 攻击如何发生？6 次确认为什么常见？PoW 的开放网络安全假设是什么？</p>`}
+  ],quiz:[
+    {q:"version 消息的作用是什么？",hint:"交换版本和链高度，触发后续同步判断。"},
+    {q:"inv 和 getdata 的关系是什么？",hint:"inv 告诉对方我有哪些哈希，getdata 请求其中某个完整对象。"},
+    {q:"Nakamoto 共识的核心三件套是什么？",hint:"PoW、最长链、概率最终性。"}
+  ]}
+];
+
+const breakdownData=learnData.map((chapter,i)=>({
+  day:i+1,
+  title:chapter.title.replace(/^第\d+章：/,""),
+  goal:[
+    "建立区块和链的最小模型，能解释数据如何连接成链。",
+    "理解挖矿循环和 target 验证，能手写 PoW 核心伪代码。",
+    "把内存对象变成可持久化字节，理解 gob encode/decode。",
+    "把链落到 BoltDB，掌握 Tip、Bucket、Iterator 三个关键点。",
+    "用 CLI 把底层能力暴露成可演示命令。",
+    "串起 createblockchain、addblock、printchain 的完整闭环。",
+    "理解 UTXO 的输入输出模型，能讲清找零和防双花。",
+    "掌握私钥、公钥、地址、校验和和钱包文件管理。",
+    "理解 Merkle Root 与 SPV 验证，能画出证明路径。",
+    "串起 P2P 同步与最长链规则，形成共识系统表达。"
+  ][i],
+  focus:[
+    "结构体字段和 Hash 依赖关系",
+    "nonce、target、hashInt 比较",
+    "字节编码、字段兼容、数据损坏",
+    "BoltDB 事务、key=l、反向迭代",
+    "子命令、参数校验、帮助信息",
+    "命令入口到数据库写入的端到端路径",
+    "Vin/Vout、Coinbase、找零、已花费集合",
+    "ECDSA、Base58、校验和、钱包序列化",
+    "交易哈希树、奇数叶子、Merkle Proof",
+    "version/inv/getdata/block、分叉收敛、51% 攻击"
+  ][i].split("、"),
+  tasks:[
+    `读 ${chapter.title} 的两个核心问题`,
+    "写出本章 3 个关键词和 1 个源码入口",
+    "完成自检题并标记掌握状态",
+    "用 60 秒把当天主题讲给面试官"
+  ],
+  sources:[
+    ["001-block/core/Block.go","001-block/core/Blockchain.go"],
+    ["002-PoW/core/ProofOfWork.go","002-PoW/core/Block.go"],
+    ["003-Serialize/core/Block.go"],
+    ["004-Persistence/core/Blockchain.go","004-Persistence/core/Blockchainiterator.go"],
+    ["005-CLI/cli/CLI.go","005-CLI/main.go"],
+    ["006-Persistence-CLI/core/Blockchain.go","006-Persistence-CLI/cli/CLI.go"],
+    ["007-transaction/core/Transaction.go","007-transaction/core/Blockchain.go"],
+    ["008-Wallet/crypto/wallet.go","008-Wallet/cli/CLI.go"],
+    ["009-MerkleTree/core/merkle_tree.go"],
+    ["010-network/network/Server.go","010-network/network/Server_send.go","010-network/network/Server_handle.go"]
+  ][i],
+  topics:chapter.topics,
+  quiz:chapter.quiz
+}));
+
+const interviewData=[
+  {dim:"项目介绍",questions:[
+    {q:"请介绍一下你用 Go 实现的区块链系统。",a:"这是一个基于 Go 从零实现的 Nakamoto 共识教学项目。核心包括数据层 BoltDB、共识层 PoW + 最长链规则、交易层 UTXO、安全层 ECDSA + Merkle 树、网络层 TCP 自定义协议。项目按 10 个渐进步骤从 Block 走到 P2P 多节点同步，最终能演示钱包、交易、挖矿、区块同步和分叉收敛。",code:"010-network/network/Server.go, 007-transaction/core/Transaction.go, 004-Persistence/core/Blockchain.go",follow:"你负责哪些模块？最大挑战是什么？PoW 难度如何调整？"}
+  ]},
+  {dim:"区块与链",questions:[
+    {q:"Block 结构体包含哪些字段？",a:"核心字段是 Height、PrevBlockHash、Data、Timestamp、Hash。Height 表示区块高度，PrevBlockHash 把区块串成链，Data 保存交易数据，Timestamp 保存创建时间，Hash 是当前区块内容摘要。",code:"001-block/core/Block.go",follow:"创世区块为什么特殊？"},
+    {q:"为什么区块链叫链？",a:"每个区块保存前一个区块的哈希。历史数据变化会导致当前 Hash 变化，后续区块保存的 PrevBlockHash 会失配，整条链的完整性校验会暴露篡改。",code:"001-block/core/Blockchain.go",follow:"重新计算后续区块需要什么成本？"}
+  ]},
+  {dim:"PoW 共识",questions:[
+    {q:"PoW 的核心原理是什么？",a:"PoW 是寻找 nonce，使区块 SHA256 哈希小于 target。挖矿需要大量尝试，验证只需一次哈希和比较，这种计算非对称性提供安全基础。",code:"002-PoW/core/ProofOfWork.go",follow:"difficulty 和 targetBit 的关系？"},
+    {q:"最长链规则如何工作？网络分区会怎样？",a:"节点在自己看到的最长链上继续挖矿。网络分区期间会形成分叉，恢复后节点比较链高度或累计工作量，切换到工作量更大的链，短链区块成为孤块。",code:"010-network/network/Server_handle.go",follow:"6 次确认为什么安全？"}
+  ]},
+  {dim:"UTXO 交易",questions:[
+    {q:"UTXO 模型和 Account 模型有什么区别？",a:"UTXO 用未花费输出表达余额，交易输入引用历史输出并产生新输出。Account 模型维护账户余额表。UTXO 适合并行验证和防双花，Account 表达更直观，适合智能合约状态。",code:"007-transaction/core/Transaction.go",follow:"Ethereum 为什么选择 Account？"},
+    {q:"Coinbase 交易是什么？",a:"Coinbase 是每个区块的第一笔交易，也是挖矿奖励来源。它没有真实输入，通常用空 TxHash 和特殊 Vout 标记，凭空产生奖励输出。",code:"007-transaction/core/Transaction.go:NewCoinbaseTransaction",follow:"Bitcoin 的减半机制怎么设计？"}
+  ]},
+  {dim:"持久化存储",questions:[
+    {q:"为什么用 BoltDB？",a:"BoltDB 是嵌入式 KV 数据库，零部署、支持事务、适合教学项目保存区块数据。项目用区块 Hash 作为 key，序列化区块作为 value，key=l 保存最新区块 Hash。",code:"004-Persistence/core/Blockchain.go",follow:"生产环境为什么常用 LevelDB/RocksDB？"},
+    {q:"迭代器模式如何遍历区块链？",a:"迭代器从 Tip 开始读取当前区块，再用 PrevBlockHash 找到前一个区块，直到创世区块。它只保存当前 Hash 和 DB 引用，空间占用很小。",code:"004-Persistence/core/Blockchainiterator.go",follow:"如果要正向遍历如何设计索引？"}
+  ]},
+  {dim:"密码学",questions:[
+    {q:"钱包地址的完整生成流程是什么？",a:"先生成 ECDSA 密钥对，再对公钥做 SHA256 和 RIPEMD160，加入版本号，双 SHA256 生成校验和，最后 Base58 编码得到地址。",code:"008-Wallet/crypto/wallet.go",follow:"Base58 为什么适合钱包地址？"},
+    {q:"Merkle 树在区块链中的作用是什么？",a:"Merkle 树把区块内交易组织成哈希树，根哈希代表全部交易集合。交易变化会改变路径上的所有父节点和根节点，SPV 节点可以用少量兄弟哈希验证交易存在。",code:"009-MerkleTree/core/merkle_tree.go",follow:"Merkle Proof 如何验证？"}
+  ]},
+  {dim:"P2P 网络",questions:[
+    {q:"P2P 网络的 5 个协议消息是什么？",a:"version 交换版本和高度，inv 广播哈希清单，getblocks 请求哈希列表，getdata 请求具体区块，block 发送完整区块数据。",code:"010-network/network/Server.go",follow:"为什么先传 inv 再传 block？"},
+    {q:"新节点如何加入并同步整条链？",a:"新节点启动后向已知节点发送 version。对方比较高度后返回 inv 或触发 getblocks，新节点再逐个 getdata 拉取完整区块，验证并写入本地数据库。",code:"010-network/network/Server_send.go",follow:"同步中断后如何续传？"}
+  ]},
+  {dim:"速查附录",table:[
+    ["Block 五字段","Height + PrevBlockHash + Data + Timestamp + Hash"],
+    ["PoW 条件","hash < target，target = 1 << (256-targetBit)"],
+    ["BoltDB key=l","保存最新区块 Hash"],
+    ["UTXO","未花费交易输出，输入引用历史输出"],
+    ["Coinbase","挖矿奖励交易，没有真实输入"],
+    ["Base58","去掉易混淆字符的人类可读编码"],
+    ["Merkle Proof","用 O(log N) 兄弟哈希证明交易存在"],
+    ["P2P 5 协议","version / inv / getblocks / getdata / block"],
+    ["Nakamoto 共识","PoW + 最长链 + 概率最终性"],
+    ["51% 攻击","攻击者控制多数算力后构建更长私链"]
+  ]}
+];
+
+const scenarioData={
+  e2e:[
+    {title:"创建区块链 → 添加区块 → 查看全链",desc:"本地单机链的最小闭环。",steps:[
+      {s:"创建区块链",loc:"./bc.exe createblockchain \"Genesis Data\"",detail:"创建 blocks Bucket，写入创世区块，设置 key=l。"},
+      {s:"添加新区块",loc:"./bc.exe addblock -data \"Send 100 to KY\"",detail:"读取 Tip，执行 PoW，序列化区块并写入 BoltDB。"},
+      {s:"查看全链",loc:"./bc.exe printchain",detail:"迭代器从 Tip 开始反向输出所有区块。"}
+    ]},
+    {title:"钱包转账 → UTXO 消费 → 新输出生成",desc:"交易模型从地址余额走到输入输出。",steps:[
+      {s:"选择可花费输出",loc:"FindSpendableUTXOs",detail:"扫描可用 UTXO，累计金额。"},
+      {s:"构造交易输入和输出",loc:"NewUTXOTransaction",detail:"输入引用旧输出，输出给接收方和找零地址。"},
+      {s:"交易进入新区块",loc:"MineNewBlock / AddBlock",detail:"交易被打包，UTXO 状态随链更新。"}
+    ]},
+    {title:"新节点加入 → 拉取区块 → 同步 Tip",desc:"P2P 同步的主流程。",steps:[
+      {s:"发送 version",loc:"sendVersion",detail:"交换节点高度和版本信息。"},
+      {s:"请求哈希清单",loc:"getblocks / inv",detail:"先拿区块哈希，再按需拉完整区块。"},
+      {s:"下载并写入区块",loc:"getdata / block",detail:"校验后写入 BoltDB 并更新本地 Tip。"}
+    ]}
+  ],
+  fault:[
+    {title:"BoltDB 文件损坏",desc:"数据库无法打开或区块数据丢失。",impacts:[
+      {what:"单机链数据丢失",detail:"本地 blockchain.db 损坏后无法恢复已写入区块。",fix:"重新 createblockchain；在网络模式下从其他节点重新同步。"}
+    ]},
+    {title:"网络分区",desc:"节点被分成两个区域，各自继续挖矿。",impacts:[
+      {what:"双分叉",detail:"两个分区都会产生新区块，短期存在两条链。",fix:"网络恢复后比较累计工作量，节点收敛到工作量更大的链。"},
+      {what:"交易回滚风险",detail:"短链上的交易可能变成孤块内容。",fix:"等待更多确认后再视为高安全交易。"}
+    ]},
+    {title:"51% 算力攻击",desc:"攻击者控制多数算力并构建私有长链。",impacts:[
+      {what:"双花风险",detail:"攻击者先在公开链支付，再用私有长链替换公开链。",fix:"提高确认数、监控算力集中度、降低高风险链上交易额度。"}
+    ]}
+  ]
+};
+
+function P(){try{return JSON.parse(localStorage.getItem(STORE)||"{}")}catch{return {}}}
+function saveP(p){localStorage.setItem(STORE,JSON.stringify(p));updateProgress()}
+function updateProgress(){const p=P();let done=0;breakdownData.forEach(d=>{if(p[`d_${d.day}`])done++});document.getElementById("progressText").textContent=`${done}/${breakdownData.length}`}
+function switchMode(mode){S.mode=mode;S.sec=0;S.topic=0;S.q="";const box=document.getElementById("searchInput");if(box)box.value="";document.querySelectorAll(".mode-btn").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));render()}
+function scrollMain(){const m=document.querySelector(".main");if(m)m.scrollTop=0}
+function toggleTheme(){const root=document.documentElement;const next=root.dataset.theme==="dark"?"light":"dark";root.dataset.theme=next;localStorage.setItem("study-theme",next);document.getElementById("themeIcon").textContent=next==="dark"?"☀":"☽"}
+function toggleLv(el){el.classList.toggle("open");const body=el.nextElementSibling;body.classList.toggle("open")}
+function toggleQuiz(el){const body=el.nextElementSibling;const icon=el.querySelector(".q-toggle");body.classList.toggle("open");if(icon)icon.classList.toggle("open")}
+function markDay(day){const p=P();p[`d_${day}`]=true;saveP(p);render()}
+function markQuiz(key,state){const p=P();p[key]=state;saveP(p);render()}
+function markInterview(dim,qi,state){const p=P();p[`i_${dim}_${qi}`]=state;saveP(p);render()}
+function htmlList(items){return `<ul>${items.map(x=>`<li>${x}</li>`).join("")}</ul>`}
+function sourceList(items){return `<div class="source-list">${items.map(s=>`<div class="source-item">${s}</div>`).join("")}</div>`}
+function lvBlock(cls,tag,title,body){return `<div class="lv-block ${cls}"><div class="lv-header" onclick="toggleLv(this)"><span class="lv-arrow">▶</span><span class="lv-tag">${tag}</span><span style="flex:1;margin-left:8px">${title}</span></div><div class="lv-body">${body}</div></div>`}
+function quizItem(q,key,idx){const st=P()[key];const badge=st==="mastered"?'<span class="quiz-status status-mastered">已掌握</span>':st==="review"?'<span class="quiz-status status-review">需复习</span>':"";return `<div class="quiz-item" style="animation-delay:${idx*40}ms"><div class="quiz-q" onclick="toggleQuiz(this)"><span class="q-num">${idx+1}</span><span class="q-text">${q.q}</span>${badge}<span class="q-toggle">▶</span></div><div class="quiz-body"><div class="quiz-hint">${q.hint}</div><div class="quiz-btns"><button class="quiz-btn mastered" onclick="event.stopPropagation();markQuiz('${key}','mastered')">已掌握</button><button class="quiz-btn review" onclick="event.stopPropagation();markQuiz('${key}','review')">需复习</button></div></div></div>`}
+
+function renderIntro(){
+  let sb='<div class="sidebar"><div class="side-title">前言</div>';
+  introData.pillars.forEach((p,i)=>{sb+=`<div class="side-item ${i===S.sec?'active':''}" onclick="S.sec=${i};render()"><span class="side-main">${p.title}</span><span class="badge">${i+1}</span></div>`});
+  sb+='</div>';
+  let mn='<div class="main"><article class="markdown-doc">';
+  mn+=`<div class="md-kicker">Nakamoto Consensus · 10 Days</div><h1>${introData.title}</h1><p>${introData.desc}</p><div class="md-pill-row"><span class="md-pill">仓库：Kunyanli230/Learn_ProofOfWork</span><span class="md-pill">10 天</span><span class="md-pill">五模式学习</span><span class="md-pill">源码驱动</span></div><blockquote>这页把区块链项目拆成可点击、可自检、可面试复盘的学习工具。</blockquote>`;
+  introData.pillars.forEach((p,i)=>{mn+=`<section class="md-section ${S.sec===i?'active':''}"><h2>${p.title}</h2><p>${p.text}</p>`;if(i===1)mn+=htmlList(introData.prerequisites);if(i>=2&&i<=6){const lv=introData.levels[i-2];mn+=`<h3>达标标准</h3><p>${lv.standard}</p><h3>证明方式</h3><p>${lv.proof}</p><h3>下一层目标</h3><p>${lv.next}</p>`}if(i===7)mn+=`<div class="mentor-strip">${introData.method.map(m=>`<div class="mentor-card"><strong>${m.title}</strong><p>${m.text}</p></div>`).join("")}</div>`;if(i===8)mn+=htmlList(introData.outputs);mn+='</section>'});
+  mn+=`<hr><section class="md-section"><h2>答题框架</h2><div class="answer-framework">${introData.answerFrame.map(x=>`<div class="framework-step">${x}</div>`).join("")}</div><h2>评分尺</h2><div class="score-grid">${introData.scorecard.map(x=>`<div class="score-card"><strong>${x.title}</strong><p>${x.text}</p></div>`).join("")}</div></section>`;
+  mn+=`</article><div class="nav-bar"><div></div><button class="nav-btn primary" onclick="switchMode('learn')">进入知识学习</button></div></div>`;
+  return sb+mn;
+}
+
+function renderLearn(){
+  const ch=learnData[S.ch], topic=ch.topics[S.topic], p=P();
+  let sb='<div class="sidebar"><div class="side-title">知识学习</div>';
+  learnData.forEach((c,ci)=>{let m=0;c.quiz.forEach((_,qi)=>{if(p[`l_${ci}_${qi}`]==="mastered")m++});const open=ci===S.ch;sb+=`<div class="side-item ${open?'active':''}" onclick="S.ch=${ci};S.topic=0;S.sec=0;render()"><span class="side-main">${c.title}</span><span class="badge">${m}/${c.quiz.length}</span></div><div class="sub-list ${open?'open':''}">`;c.topics.forEach((t,ti)=>{sb+=`<div class="sub-item ${open&&S.sec===0&&S.topic===ti?'active':''}" onclick="S.ch=${ci};S.sec=0;S.topic=${ti};render()">${t.q}</div>`});sb+=`<div class="sub-item ${open&&S.sec===1?'active':''}" onclick="S.ch=${ci};S.sec=1;render()">自检题</div></div>`});
+  sb+='</div>';
+  let mn='<div class="main">';
+  if(S.sec===0){
+    mn+=`<div class="content-header"><h1>${ch.title}</h1><div class="subtitle">${topic.q}</div></div><div class="section-card"><h2>${topic.q}</h2>`;
+    mn+=lvBlock("lv1","Lv1","概念：是什么、为什么",topic.lv1)+lvBlock("lv2","Lv2","源码：项目里怎么做",topic.lv2)+lvBlock("lv3","Lv3","追问：边界和扩展",topic.lv3);
+    mn+='</div><div class="nav-bar">';
+    mn+=S.topic>0?`<button class="nav-btn" onclick="S.topic--;render();scrollMain()">上一个知识点</button>`:'<div></div>';
+    mn+=S.topic<ch.topics.length-1?`<button class="nav-btn primary" onclick="S.topic++;render();scrollMain()">下一个知识点</button>`:`<button class="nav-btn primary" onclick="S.sec=1;render();scrollMain()">查看自检题</button>`;
+    mn+='</div>';
+  }else{
+    mn+=`<div class="content-header"><h1>${ch.title}</h1><div class="subtitle">自检题</div></div><div class="quiz-section">`;
+    ch.quiz.forEach((q,qi)=>{mn+=quizItem(q,`l_${S.ch}_${qi}`,qi)});
+    mn+='</div><div class="nav-bar">';
+    mn+=`<button class="nav-btn" onclick="S.sec=0;S.topic=${ch.topics.length-1};render();scrollMain()">返回知识点</button>`;
+    mn+=S.ch<learnData.length-1?`<button class="nav-btn primary" onclick="S.ch++;S.sec=0;S.topic=0;render();scrollMain()">下一章</button>`:`<button class="nav-btn primary" onclick="switchMode('breakdown')">进入项目拆解</button>`;
+    mn+='</div>';
+  }
+  return sb+mn+'</div>';
+}
+
+function renderBreakdown(){
+  const day=breakdownData[S.ch], topic=day.topics[S.topic], p=P();
+  let sb='<div class="sidebar"><div class="side-title">10 天项目拆解</div>';
+  breakdownData.forEach((d,di)=>{const open=di===S.ch,done=p[`d_${d.day}`];sb+=`<div class="side-item ${open?'active':''}" onclick="S.ch=${di};S.sec=0;S.topic=0;render()"><span class="side-main">Day ${d.day}：${d.title}</span><span class="badge">${done?'完成':'学习'}</span></div><div class="sub-list ${open?'open':''}"><div class="sub-item ${open&&S.sec===0?'active':''}" onclick="S.ch=${di};S.sec=0;S.topic=0;render()">今日拆解</div>`;d.topics.forEach((t,ti)=>{sb+=`<div class="sub-item ${open&&S.sec===1&&S.topic===ti?'active':''}" onclick="S.ch=${di};S.sec=1;S.topic=${ti};render()">${t.q}</div>`});sb+=`<div class="sub-item ${open&&S.sec===2?'active':''}" onclick="S.ch=${di};S.sec=2;render()">自检题</div></div>`});
+  sb+='</div>';
+  let mn='<div class="main">';
+  if(S.sec===0){
+    mn+=`<div class="hero"><div class="kicker">Project Breakdown · Day ${day.day}</div><h2>${day.title}</h2><p>${day.goal}</p><div class="pill-row"><span class="pill">10 天路线</span><span class="pill">源码 + 面试</span><span class="pill">Nakamoto 共识</span></div></div>`;
+    mn+='<div class="grid">';
+    mn+=`<div class="panel"><h3>今日学习目标</h3><p>${day.goal}</p><h3>核心关注点</h3>${htmlList(day.focus)}<h3>今日任务</h3>${day.tasks.map(t=>`<div class="checkline"><span>✓</span><div>${t}</div></div>`).join("")}</div>`;
+    mn+=`<div class="panel"><h3>源码入口</h3>${sourceList(day.sources)}<button class="nav-btn primary" style="width:100%;margin-top:16px" onclick="markDay(${day.day})">标记 Day ${day.day} 完成</button></div>`;
+    mn+=`<div class="panel"><h3>面试打法</h3><div class="answer-framework">${introData.answerFrame.map(x=>`<div class="framework-step">${x}</div>`).join("")}</div><div class="microcopy">今日主线：${day.title}。回答时先给机制结论，再回到 ${day.sources[0]}，最后补充安全边界和扩展。</div></div>`;
+    mn+='</div><div class="nav-bar">';
+    mn+=S.ch>0?`<button class="nav-btn" onclick="S.ch--;S.sec=0;S.topic=0;render();scrollMain()">上一天</button>`:'<div></div>';
+    mn+=`<button class="nav-btn primary" onclick="S.sec=1;S.topic=0;render();scrollMain()">进入今日知识点</button></div>`;
+  }else if(S.sec===1){
+    mn+=`<div class="content-header"><h1>Day ${day.day}：${day.title}</h1><div class="subtitle">${topic.q}</div></div><div class="section-card"><h2>${topic.q}</h2>`;
+    mn+=lvBlock("lv1","Lv1","先建立理解",topic.lv1)+lvBlock("lv2","Lv2","回到源码入口",topic.lv2)+lvBlock("lv3","Lv3","形成追问回答",topic.lv3);
+    mn+='</div><div class="nav-bar">';
+    mn+=S.topic>0?`<button class="nav-btn" onclick="S.topic--;render();scrollMain()">上一个知识点</button>`:`<button class="nav-btn" onclick="S.sec=0;render();scrollMain()">返回今日拆解</button>`;
+    mn+=S.topic<day.topics.length-1?`<button class="nav-btn primary" onclick="S.topic++;render();scrollMain()">下一个知识点</button>`:`<button class="nav-btn primary" onclick="S.sec=2;render();scrollMain()">查看自检题</button>`;
+    mn+='</div>';
+  }else{
+    mn+=`<div class="content-header"><h1>Day ${day.day}：${day.title}</h1><div class="subtitle">自检题</div></div><div class="quiz-section">`;
+    day.quiz.forEach((q,qi)=>{mn+=quizItem(q,`b_${S.ch}_${qi}`,qi)});
+    mn+='</div><div class="nav-bar">';
+    mn+=`<button class="nav-btn" onclick="S.sec=1;S.topic=${day.topics.length-1};render();scrollMain()">返回知识点</button>`;
+    mn+=S.ch<breakdownData.length-1?`<button class="nav-btn primary" onclick="markDay(${day.day});S.ch++;S.sec=0;S.topic=0;render();scrollMain()">完成并进入下一天</button>`:`<button class="nav-btn primary" onclick="markDay(${day.day});switchMode('interview')">进入面试模拟</button>`;
+    mn+='</div>';
+  }
+  return sb+mn+'</div>';
+}
+
+function renderInterview(){
+  const p=P(), dim=interviewData[S.dim];
+  let sb='<div class="sidebar"><div class="side-title">面试问答</div>';
+  interviewData.forEach((d,di)=>{let label=d.table?"表":`${(d.questions||[]).filter((_,qi)=>p[`i_${di}_${qi}`]).length}/${(d.questions||[]).length}`;sb+=`<div class="side-item ${di===S.dim?'active':''}" onclick="S.dim=${di};render()"><span class="side-main">${d.dim}</span><span class="badge">${label}</span></div>`});
+  sb+='</div>';
+  let mn='<div class="main">';
+  if(dim.table){
+    mn+=`<div class="content-header"><h1>高频速查表</h1><div class="subtitle">面试前快速复盘关键数字和关键词</div></div><table class="table"><thead><tr><th>知识点</th><th>要点</th></tr></thead><tbody>`;
+    dim.table.forEach(r=>{mn+=`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`});
+    mn+='</tbody></table>';
+  }else{
+    mn+=`<div class="content-header"><h1>${dim.dim}</h1><div class="subtitle">${dim.questions.length} 道题，点击卡片翻转答案</div></div><div class="toolbar"><button class="tool-btn primary" onclick="randomQ()">随机抽题</button><span class="timer" id="timerDisp">00:00</span><button class="tool-btn" id="timerBtn" onclick="toggleTimer()">开始计时</button></div><div class="card-grid">`;
+    dim.questions.forEach((q,qi)=>{const st=p[`i_${S.dim}_${qi}`];mn+=`<div class="card ${st?'':''}" onclick="this.classList.toggle('flipped')" style="animation-delay:${qi*35}ms"><div class="card-inner"><div class="card-face card-front"><div class="card-idx">Q${qi+1}</div><div class="card-title">${q.q}</div><span class="card-tag">${dim.dim}${st?' · 已标记':''}</span></div><div class="card-face card-back"><h4>参考答案</h4><p>${q.a}</p><h4>答题结构</h4><p>${introData.answerFrame.join(" → ")}</p>${q.code?`<h4>代码关联</h4><p class="code-link">${q.code}</p>`:""}${q.follow?`<h4>追问方向</h4><p>${q.follow}</p>`:""}<div class="card-actions"><button class="card-action practice" onclick="event.stopPropagation();markInterview(${S.dim},${qi},'practice')">已练习</button><button class="card-action review" onclick="event.stopPropagation();markInterview(${S.dim},${qi},'review')">需复习</button></div></div></div></div>`});
+    mn+='</div>';
+  }
+  return sb+mn+'</div>';
+}
+
+function renderScenario(){
+  let sb='<div class="sidebar"><div class="side-title">场景还原</div>';
+  sb+=`<div class="side-item ${S.sec===0?'active':''}" onclick="S.sec=0;render()"><span class="side-main">端到端流程</span><span class="badge">${scenarioData.e2e.length}</span></div>`;
+  sb+=`<div class="side-item ${S.sec===1?'active':''}" onclick="S.sec=1;render()"><span class="side-main">故障排查</span><span class="badge">${scenarioData.fault.length}</span></div></div>`;
+  let mn='<div class="main">';
+  if(S.sec===0){
+    mn+=`<div class="content-header"><h1>端到端场景还原</h1><div class="subtitle">把请求从命令入口追到数据与网络</div></div><div class="grid">`;
+    scenarioData.e2e.forEach(sc=>{mn+=`<div class="panel"><h3>${sc.title}</h3><p>${sc.desc}</p>${sourceList(sc.steps.map((st,i)=>`${i+1}. ${st.s}<br>${st.loc}<br>${st.detail}`))}</div>`});
+    mn+='</div>';
+  }else{
+    mn+=`<div class="content-header"><h1>故障排查场景</h1><div class="subtitle">训练存储损坏、网络分区和算力攻击下的回答</div></div><div class="grid">`;
+    scenarioData.fault.forEach(sc=>{mn+=`<div class="panel"><h3>${sc.title}</h3><p>${sc.desc}</p>${sc.impacts.map(im=>`<div class="score-card" style="margin-top:10px"><strong>${im.what}</strong><p>${im.detail}</p><p>${im.fix}</p></div>`).join("")}</div>`});
+    mn+='</div>';
+  }
+  return sb+mn+'</div>';
+}
+
+function collectSearch(){
+  const rows=[];
+  introData.pillars.forEach((p,i)=>rows.push({m:"intro",title:p.title,snip:p.text,go:()=>{switchMode("intro");S.sec=i;render()}}));
+  learnData.forEach((c,ci)=>{c.topics.forEach((t,ti)=>rows.push({m:"learn",title:`${c.title} · ${t.q}`,snip:(t.lv1+t.lv2+t.lv3).replace(/<[^>]+>/g,""),go:()=>{switchMode("learn");S.ch=ci;S.topic=ti;S.sec=0;render()}}));c.quiz.forEach((q,qi)=>rows.push({m:"learn",title:`${c.title} · 自检题`,snip:q.q+" "+q.hint,go:()=>{switchMode("learn");S.ch=ci;S.sec=1;render()}}))});
+  breakdownData.forEach((d,di)=>rows.push({m:"breakdown",title:`Day ${d.day}：${d.title}`,snip:d.goal+" "+d.focus.join(" "),go:()=>{switchMode("breakdown");S.ch=di;S.sec=0;render()}}));
+  interviewData.forEach((d,di)=>(d.questions||[]).forEach((q,qi)=>rows.push({m:"interview",title:`${d.dim} · ${q.q}`,snip:q.a+" "+(q.follow||""),go:()=>{switchMode("interview");S.dim=di;render()}})));
+  scenarioData.e2e.forEach((s,i)=>rows.push({m:"scenario",title:s.title,snip:s.desc,go:()=>{switchMode("scenario");S.sec=0;render()}}));
+  scenarioData.fault.forEach((s,i)=>rows.push({m:"scenario",title:s.title,snip:s.desc,go:()=>{switchMode("scenario");S.sec=1;render()}}));
+  return rows;
+}
+let searchRows=collectSearch();
+function escReg(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}
+function hl(text,q){return text.replace(new RegExp(escReg(q),"gi"),m=>`<mark>${m}</mark>`)}
+function handleSearch(q){S.q=q.trim();if(S.q)renderSearch();else render()}
+function renderSearch(){
+  const q=S.q.toLowerCase();const res=searchRows.filter(r=>(r.title+" "+r.snip).toLowerCase().includes(q)).slice(0,80);
+  let h='<div class="sidebar"><div class="side-title">搜索</div><div class="side-item active"><span class="side-main">搜索结果</span><span class="badge">'+res.length+'</span></div></div><div class="main search-results">';
+  h+=`<div class="content-header"><h1>搜索结果</h1><div class="subtitle">"${S.q}"，找到 ${res.length} 条匹配</div></div>`;
+  res.forEach((r,i)=>{h+=`<div class="search-result" onclick="jumpSearch(${i})"><div class="sr-mode">${r.m}</div><div class="sr-title">${hl(r.title,S.q)}</div><div class="sr-snippet">${hl(r.snip.slice(0,180),S.q)}</div></div>`});
+  h+='</div>';document.getElementById("app").innerHTML=h;window.__searchRes=res;
+}
+function jumpSearch(i){const r=window.__searchRes[i];if(r)r.go()}
+
+let timer=null,t0=0,elapsed=0;
+function toggleTimer(){const btn=document.getElementById("timerBtn");if(timer){clearInterval(timer);timer=null;elapsed+=Date.now()-t0;btn.textContent="继续计时";return}t0=Date.now();btn.textContent="暂停计时";timer=setInterval(()=>{const ms=elapsed+Date.now()-t0;const s=Math.floor(ms/1000);document.getElementById("timerDisp").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")},250)}
+function randomQ(){const dim=interviewData[S.dim];if(!dim.questions||!dim.questions.length)return;const cards=document.querySelectorAll(".card");const i=Math.floor(Math.random()*cards.length);cards[i]?.scrollIntoView({behavior:"smooth",block:"center"});cards[i]?.classList.add("flipped")}
+
+function render(){
+  if(S.q){renderSearch();return}
+  let html=S.mode==="intro"?renderIntro():S.mode==="learn"?renderLearn():S.mode==="breakdown"?renderBreakdown():S.mode==="interview"?renderInterview():renderScenario();
+  document.getElementById("app").innerHTML=html;
+  updateProgress();
+}
+const savedTheme=localStorage.getItem("study-theme");if(savedTheme){document.documentElement.dataset.theme=savedTheme;document.getElementById("themeIcon").textContent=savedTheme==="dark"?"☀":"☽"}
+render();
+</script>
+</body>
+</html>
