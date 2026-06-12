@@ -37,7 +37,7 @@
   {{ if or $prev $next }}
     <div class="goclub-prev-next">
       {{ with $prev }}
-        <a href="{{ .RelPermalink }}" class="goclub-nav-card">
+        <a href="{{ .RelPermalink }}" class="goclub-nav-card goclub-nav-card--prev">
           <span class="goclub-nav-card-meta">
             <span class="goclub-nav-card-label">上一篇</span>
             <span class="goclub-nav-card-title">{{ partial "docs/title" . }}</span>
@@ -46,7 +46,7 @@
         </a>
       {{ end }}
       {{ with $next }}
-        <a href="{{ .RelPermalink }}" class="goclub-nav-card">
+        <a href="{{ .RelPermalink }}" class="goclub-nav-card goclub-nav-card--next">
           <span class="goclub-nav-card-meta">
             <span class="goclub-nav-card-label">下一篇</span>
             <span class="goclub-nav-card-title">{{ partial "docs/title" . }}</span>
