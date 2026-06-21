@@ -12,3 +12,4 @@ bookCollapseSection: true
 ## 书籍目录
 
 - [币安人生：幸运、韧性与保护用户的回忆录（简体版）](/docs/resources/epub-books/binance-life/)：34 个在线阅读页面
+- [这世界既残酷也温柔](/docs/resources/epub-books/cruel-and-gentle-world/)：36 个在线阅读页面
