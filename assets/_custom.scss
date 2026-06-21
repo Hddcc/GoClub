@@ -3536,3 +3536,103 @@ body {
   background: #fff;
   box-shadow: 0 18px 45px rgba(44, 40, 52, 0.12);
 }
+
+.epub-book-note {
+  margin: 1.25rem 0 1.75rem;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--goclub-border);
+  border-radius: 0.75rem;
+  background: var(--goclub-surface-strong);
+  color: var(--goclub-muted-text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.epub-book-hero {
+  display: grid;
+  grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin: 1.5rem 0 2rem;
+}
+
+.epub-cover-image {
+  display: block;
+  width: 100%;
+  max-width: 18rem;
+  height: auto;
+  border-radius: 0.45rem;
+  box-shadow: 0 18px 45px rgba(44, 40, 52, 0.12);
+}
+
+.epub-book-hero-copy {
+  color: var(--goclub-muted-text);
+  line-height: 1.75;
+}
+
+.epub-download-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.55rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.55rem;
+  background: var(--goclub-primary-action);
+  color: var(--goclub-on-primary-action);
+  font-weight: 650;
+}
+
+.epub-download-link:hover {
+  color: var(--goclub-on-primary-action);
+  background: var(--goclub-primary-action-strong);
+  text-decoration: none;
+}
+
+.epub-book-content {
+  font-size: 1.02rem;
+  line-height: 1.9;
+}
+
+.epub-book-content p {
+  margin: 1em 0;
+}
+
+.epub-book-content .calibre3,
+.epub-book-content p[style*="center"] {
+  text-align: center;
+}
+
+.epub-book-content .calibre4,
+.epub-book-content .calibre10 {
+  font-size: 1.35em;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.epub-book-content .calibre7,
+.epub-book-content figcaption {
+  color: var(--goclub-muted-text);
+  font-size: 0.9rem;
+}
+
+.epub-book-content img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 1.4rem auto;
+  border-radius: 0.35rem;
+}
+
+.epub-book-content a {
+  overflow-wrap: anywhere;
+}
+
+@media screen and (max-width: 42rem) {
+  .epub-book-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .epub-cover-image {
+    max-width: 14rem;
+  }
+}
