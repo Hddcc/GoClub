@@ -7,7 +7,7 @@ bookCollapseSection: true
 
 # PDF 书籍全文资料
 
-<div class="pdf-ebook-note">本分区按授权将本地 PDF 扫描件整理为在线电子书。正文以逐页图片呈现原 PDF 排版，OCR 文本折叠在每页下方用于站内搜索和校对。</div>
+<div class="pdf-ebook-note">本分区按授权将本地 PDF 扫描件整理为在线电子书。正文以逐页图片呈现原 PDF 排版。</div>
 
 ## 书籍目录
 
@@ -17,4 +17,4 @@ bookCollapseSection: true
 
 ## 阅读说明
 
-每页上方显示原 PDF 页面图片；展开“OCR 文本”可查看对应识别文本，便于搜索、复制和校对。
+每页显示原 PDF 页面图片，适合在线阅读。

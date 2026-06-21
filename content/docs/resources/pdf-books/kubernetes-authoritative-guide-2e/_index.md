@@ -7,7 +7,7 @@ bookCollapseSection: true
 
 # Kubernetes 权威指南：从 Docker 到 Kubernetes 实践全接触（第2版）
 
-<div class="pdf-ebook-note">来源文件：Kubernetes权威指南：从Docker到Kubernetes实践全接触（第2版).pdf。本书已生成逐页在线电子书，页面图片保留原 PDF 排版，OCR 文本折叠在每页下方用于搜索和校对。</div>
+<div class="pdf-ebook-note">来源文件：Kubernetes权威指南：从Docker到Kubernetes实践全接触（第2版).pdf。本书已生成逐页在线电子书，页面图片保留原 PDF 排版。</div>
 
 ## 分卷目录
 
