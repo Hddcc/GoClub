@@ -9,7 +9,11 @@ bookToC: true
 
 这里整理 Kubernetes、CNCF、DevOps 和 Web3 方向的系统学习入口，适合从容器编排入门，逐步过渡到云原生工程实践和新技术方向扩展。
 
-资料来源为技术书栈公开页面；本站整理学习路径、主题说明和原文入口，完整正文以原站链接为准。
+资料来源为技术书栈公开页面；本站已按授权迁移全文，章节页保留原文来源链接。
+
+## 全文入口
+
+- [云原生与 Web3 全文资料]({{< relref "cloud-native-web3-fulltext/_index.md" >}})
 
 ## 建议学习顺序
 
@@ -25,6 +29,7 @@ bookToC: true
 
 - 适合阶段：Kubernetes 入门、容器编排初学
 - 学习重点：集群基础、工作负载、服务暴露、配置管理、基础运维
+- 站内全文：[Kubernetes 从上手到实践]({{< relref "cloud-native-web3-fulltext/kubernetes-from-start-to-practice/_index.md" >}})
 - 原文地址：[Kubernetes 从上手到实践](https://study.disign.me/document/Kubernetes%20%E4%BB%8E%E4%B8%8A%E6%89%8B%E5%88%B0%E5%AE%9E%E8%B7%B5/)
 
 ## Kubernetes 实践入门指南
@@ -33,6 +38,7 @@ bookToC: true
 
 - 适合阶段：Kubernetes 基础巩固、项目部署练习
 - 学习重点：应用部署、服务发现、滚动更新、资源管理、常见排障
+- 站内全文：[Kubernetes 实践入门指南]({{< relref "cloud-native-web3-fulltext/kubernetes-practice-guide/_index.md" >}})
 - 原文地址：[Kubernetes 实践入门指南](https://study.disign.me/document/Kubernetes%20%E5%AE%9E%E8%B7%B5%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/)
 
 ## Kubernetes 入门实战课
@@ -41,6 +47,7 @@ bookToC: true
 
 - 适合阶段：实战练习、课程跟学
 - 学习重点：资源清单、应用编排、服务发布、基础运维动作
+- 站内全文：[Kubernetes 入门实战课]({{< relref "cloud-native-web3-fulltext/kubernetes-practical-intro-course/_index.md" >}})
 - 原文地址：[Kubernetes 入门实战课](https://study.disign.me/document/Kubernetes%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98%E8%AF%BE/)
 
 ## CNCF X 阿里巴巴云原生技术公开课
@@ -49,6 +56,7 @@ bookToC: true
 
 - 适合阶段：云原生体系化学习、技术全景建立
 - 学习重点：CNCF 生态、Kubernetes、微服务、可观测性、服务治理
+- 站内全文：[CNCF X 阿里巴巴云原生技术公开课]({{< relref "cloud-native-web3-fulltext/cncf-alibaba-cloud-native-course/_index.md" >}})
 - 原文地址：[CNCF X 阿里巴巴云原生技术公开课](https://study.disign.me/document/CNCF%20X%20%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4%E4%BA%91%E5%8E%9F%E7%94%9F%E6%8A%80%E6%9C%AF%E5%85%AC%E5%BC%80%E8%AF%BE/)
 
 ## DevOps 实战笔记
@@ -57,6 +65,7 @@ DevOps 实战笔记适合放在 Kubernetes 学习之后阅读。它能帮助你�
 
 - 适合阶段：工程实践、发布流程建设、运维协作
 - 学习重点：CI/CD、自动化发布、环境管理、监控告警、交付效率
+- 站内全文：[DevOps 实战笔记]({{< relref "cloud-native-web3-fulltext/devops-practice-notes/_index.md" >}})
 - 原文地址：[DevOps 实战笔记](https://study.disign.me/document/DevOps%E5%AE%9E%E6%88%98%E7%AC%94%E8%AE%B0/)
 
 ## Web 3.0 入局攻略
@@ -65,6 +74,7 @@ DevOps 实战笔记适合放在 Kubernetes 学习之后阅读。它能帮助你�
 
 - 适合阶段：Web3 概念入门、方向扩展
 - 学习重点：区块链基础、智能合约、钱包、DApp、链上生态
+- 站内全文：[Web 3.0 入局攻略]({{< relref "cloud-native-web3-fulltext/web3-entry-guide/_index.md" >}})
 - 原文地址：[Web 3.0 入局攻略](https://study.disign.me/document/Web%203.0%E5%85%A5%E5%B1%80%E6%94%BB%E7%95%A5/)
 
 ## 搭配练习
