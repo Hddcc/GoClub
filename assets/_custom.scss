@@ -3636,3 +3636,53 @@ body {
     max-width: 14rem;
   }
 }
+
+.book-menu .book-menu-content,
+.book-menu nav {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.book-menu .book-menu-content::-webkit-scrollbar,
+.book-menu nav::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@media screen and (min-width: 56.01rem) {
+  .book-menu .book-menu-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .book-menu nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 4.25rem;
+  }
+
+  .sidebar-toggle {
+    position: fixed;
+    right: auto;
+    bottom: 1.25rem;
+    left: calc(max(1rem, calc((100vw - 102rem) / 2 + 1rem)) + var(--goclub-sidebar-width) - 3.75rem);
+    margin: 0;
+    transform: none;
+  }
+
+  .sidebar-toggle:hover {
+    transform: translateY(-1px);
+  }
+
+  body.sidebar-collapsed .sidebar-toggle {
+    right: auto;
+    left: calc(max(1rem, calc((100vw - 102rem) / 2 + 1rem)) + 1.25rem);
+    transform: none;
+  }
+
+  body.sidebar-collapsed .sidebar-toggle:hover {
+    transform: translateY(-1px);
+  }
+}
