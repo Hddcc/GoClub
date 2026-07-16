@@ -1,13 +1,13 @@
 ---
-title: "EPUB 电子书"
-weight: 8
+title: "在线电子书"
+weight: 10
 type: docs
 bookCollapseSection: true
 ---
 
-# EPUB 电子书
+# 在线电子书
 
-<div class="epub-book-note">本分区收录授权导入的 EPUB 电子书，提供在线阅读和原文件下载。</div>
+<div class="epub-book-note">本分区收录授权导入的电子书，提供在线阅读和 EPUB 原文件下载。</div>
 
 ## 书籍目录
 

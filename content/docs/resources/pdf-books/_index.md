@@ -1,6 +1,6 @@
 ---
 title: "PDF 书籍全文资料"
-weight: 7
+weight: 9
 type: docs
 bookCollapseSection: true
 ---
