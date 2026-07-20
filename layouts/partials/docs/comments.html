@@ -1,20 +1,10 @@
-{{ with .Site.Params.giscus }}
-  {{ if and .enabled .repo .repoId .category .categoryId }}
-    <script
-      src="https://giscus.app/client.js"
-      data-repo="{{ .repo }}"
-      data-repo-id="{{ .repoId }}"
-      data-category="{{ .category }}"
-      data-category-id="{{ .categoryId }}"
-      data-mapping="{{ default "pathname" .mapping }}"
-      data-strict="{{ default "0" .strict }}"
-      data-reactions-enabled="{{ default "1" .reactionsEnabled }}"
-      data-emit-metadata="{{ default "0" .emitMetadata }}"
-      data-input-position="{{ default "bottom" .inputPosition }}"
-      data-theme="{{ default "preferred_color_scheme" .theme }}"
-      data-lang="{{ default "zh-CN" .lang }}"
-      crossorigin="anonymous"
-      async
-    ></script>
-  {{ end }}
+{{ with .Site.Params.BookRepo }}
+  <section class="goclub-feedback" aria-labelledby="goclub-feedback-title">
+    <div class="goclub-feedback-copy">
+      <span class="goclub-feedback-kicker">内容反馈</span>
+      <h2 id="goclub-feedback-title">发现错误或想补充内容？</h2>
+      <p>GoClub 是静态知识库，评论功能不再加载第三方脚本。你可以在 GitHub 仓库提交 Issue，反馈会直接进入项目协作流程。</p>
+    </div>
+    <a class="goclub-feedback-button" href="{{ . }}/issues/new" target="_blank" rel="noopener noreferrer">提交 GitHub 反馈</a>
+  </section>
 {{ end }}

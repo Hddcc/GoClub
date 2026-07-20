@@ -1,4 +1,3 @@
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 .goclub-chatbot {
   position: fixed;
@@ -522,8 +521,8 @@
       return;
     }
     messagesEl.innerHTML = state.messages.map(function(m) {
-      var content = m.role === 'user' ? m.content : sanitizeSpecialTags(m.content);
-      var html = m.role === 'user' ? escapeHtml(content) : marked.parse(content);
+      var content = m.content || '';
+      var html = m.role === 'user' ? escapeHtml(content) : renderAssistantMarkdown(content);
       return '<div class="goclub-chatbot-msg ' + m.role + '">' + html + '</div>';
     }).join('');
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -533,6 +532,172 @@
     var div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // A small, dependency-free Markdown renderer for assistant messages.
+  // Raw HTML is escaped first so model output cannot inject markup or scripts.
+  function renderAssistantMarkdown(text) {
+    var source = escapeHtml(sanitizeSpecialTags(String(text))).replace(/\r\n?/g, '\n');
+    var lines = source.split('\n');
+    var html = [];
+    var paragraph = [];
+    var listType = '';
+    var codeLines = [];
+    var codeLanguage = '';
+    var inCode = false;
+    var skipThroughLine = -1;
+
+    function closeList() {
+      if (!listType) return;
+      html.push('</' + listType + '>');
+      listType = '';
+    }
+
+    function flushParagraph() {
+      if (!paragraph.length) return;
+      html.push('<p>' + renderInline(paragraph.join('<br>')) + '</p>');
+      paragraph = [];
+    }
+
+    function tableCells(line) {
+      return line.trim().replace(/^\||\|$/g, '').split('|').map(function(cell) {
+        return cell.trim();
+      });
+    }
+
+    function isTableSeparator(line) {
+      if (!line || line.indexOf('|') === -1) return false;
+      return tableCells(line).every(function(cell) {
+        return /^:?-{3,}:?$/.test(cell);
+      });
+    }
+
+    lines.forEach(function(line, lineIndex) {
+      if (lineIndex <= skipThroughLine) return;
+      var fence = line.match(/^```([\w-]*)\s*$/);
+      if (fence) {
+        flushParagraph();
+        closeList();
+        if (inCode) {
+          var className = codeLanguage ? ' class="language-' + codeLanguage + '"' : '';
+          html.push('<pre><code' + className + '>' + codeLines.join('\n') + '</code></pre>');
+          codeLines = [];
+          codeLanguage = '';
+          inCode = false;
+        } else {
+          codeLanguage = fence[1];
+          inCode = true;
+        }
+        return;
+      }
+
+      if (inCode) {
+        codeLines.push(line);
+        return;
+      }
+
+      if (line.indexOf('|') !== -1 && isTableSeparator(lines[lineIndex + 1])) {
+        flushParagraph();
+        closeList();
+        var headers = tableCells(line);
+        var tableRows = [];
+        var rowIndex = lineIndex + 2;
+        while (rowIndex < lines.length && lines[rowIndex].trim() && lines[rowIndex].indexOf('|') !== -1) {
+          tableRows.push(tableCells(lines[rowIndex]));
+          rowIndex += 1;
+        }
+        var tableHTML = '<table><thead><tr>' + headers.map(function(cell) {
+          return '<th>' + renderInline(cell) + '</th>';
+        }).join('') + '</tr></thead><tbody>';
+        tableRows.forEach(function(row) {
+          tableHTML += '<tr>' + headers.map(function(_, cellIndex) {
+            return '<td>' + renderInline(row[cellIndex] || '') + '</td>';
+          }).join('') + '</tr>';
+        });
+        html.push(tableHTML + '</tbody></table>');
+        skipThroughLine = rowIndex - 1;
+        return;
+      }
+
+      if (!line.trim()) {
+        flushParagraph();
+        closeList();
+        return;
+      }
+
+      var heading = line.match(/^(#{1,6})\s+(.+)$/);
+      if (heading) {
+        flushParagraph();
+        closeList();
+        var level = heading[1].length;
+        html.push('<h' + level + '>' + renderInline(heading[2]) + '</h' + level + '>');
+        return;
+      }
+
+      if (/^\s*(\*{3,}|-{3,}|_{3,})\s*$/.test(line)) {
+        flushParagraph();
+        closeList();
+        html.push('<hr>');
+        return;
+      }
+
+      var unordered = line.match(/^\s*[-*+]\s+(.+)$/);
+      var ordered = line.match(/^\s*\d+[.)]\s+(.+)$/);
+      if (unordered || ordered) {
+        flushParagraph();
+        var nextListType = unordered ? 'ul' : 'ol';
+        if (listType !== nextListType) {
+          closeList();
+          listType = nextListType;
+          html.push('<' + listType + '>');
+        }
+        html.push('<li>' + renderInline((unordered || ordered)[1]) + '</li>');
+        return;
+      }
+
+      var quote = line.match(/^\s*>\s?(.*)$/);
+      if (quote) {
+        flushParagraph();
+        closeList();
+        html.push('<blockquote>' + renderInline(quote[1]) + '</blockquote>');
+        return;
+      }
+
+      closeList();
+      paragraph.push(line);
+    });
+
+    if (inCode) {
+      var unfinishedClass = codeLanguage ? ' class="language-' + codeLanguage + '"' : '';
+      html.push('<pre><code' + unfinishedClass + '>' + codeLines.join('\n') + '</code></pre>');
+    }
+    flushParagraph();
+    closeList();
+    return html.join('');
+  }
+
+  function renderInline(text) {
+    var codeTokens = [];
+    var value = text.replace(/`([^`]+)`/g, function(_, code) {
+      var token = '\u0000CODE' + codeTokens.length + '\u0000';
+      codeTokens.push('<code>' + code + '</code>');
+      return token;
+    });
+
+    value = value.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+["']([^"']*)["'])?\)/g, function(_, label, url, title) {
+      var safeURL = /^(https?:\/\/|mailto:|\/|#)/i.test(url) ? url : '#';
+      var titleAttr = title ? ' title="' + title + '"' : '';
+      return '<a href="' + safeURL + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + label + '</a>';
+    });
+    value = value.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    value = value.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    value = value.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    value = value.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+    codeTokens.forEach(function(token, index) {
+      value = value.replace('\u0000CODE' + index + '\u0000', token);
+    });
+    return value;
   }
 
   // 处理特殊标签，如 <think>、<answer>、<tool_call> 等，防止被浏览器解析

@@ -5,8 +5,6 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>GoClub Knowledge Base - Technical Interview Prep</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -68,20 +66,43 @@
                         "full": "9999px"
                     },
                     "fontFamily": {
-                        "headline": ["Newsreader"],
-                        "body": ["Manrope"],
-                        "label": ["Manrope"]
+                        "headline": ["Songti SC", "STSong", "serif"],
+                        "body": ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+                        "label": ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"]
                     }
                 },
             },
         }
     </script>
 <style>
-        body { font-family: 'Manrope', sans-serif; }
-        .headline-font { font-family: 'Newsreader', serif; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        .headline-font { font-family: 'Songti SC', 'STSong', 'SimSun', serif; }
         .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.2em;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI Symbol', sans-serif;
+            font-size: 0 !important;
+            line-height: 1;
         }
+        .material-symbols-outlined::before { content: '•'; font-size: 1rem; }
+        .material-symbols-outlined[data-icon='menu_book']::before { content: '▤'; }
+        .material-symbols-outlined[data-icon='code']::before,
+        .material-symbols-outlined[data-icon='github']::before { content: '</>'; font-size: 0.78rem; }
+        .material-symbols-outlined[data-icon='edit_note']::before,
+        .material-symbols-outlined[data-icon='edit']::before { content: '✎'; }
+        .material-symbols-outlined[data-icon='inventory_2']::before { content: '▣'; }
+        .material-symbols-outlined[data-icon='settings']::before { content: '⚙'; }
+        .material-symbols-outlined[data-icon='help_outline']::before { content: '?'; }
+        .material-symbols-outlined[data-icon='description']::before { content: '▧'; }
+        .material-symbols-outlined[data-icon='verified']::before { content: '✓'; }
+        .material-symbols-outlined[data-icon='view_column']::before { content: '▥'; }
+        .material-symbols-outlined[data-icon='bolt']::before { content: 'ϟ'; }
+        .material-symbols-outlined[data-icon='groups']::before { content: '◉'; }
+        .material-symbols-outlined[data-icon='data_object']::before { content: '{}'; font-size: 7rem; }
+        .material-symbols-outlined[data-icon='arrow_forward']::before { content: '→'; }
+        .material-symbols-outlined[data-icon='history']::before { content: '↶'; }
     </style>
 </head>
 <body class="bg-background text-on-surface">
@@ -93,7 +114,7 @@
 <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
 </div>
 <div>
-<h1 class="text-2xl font-black font-['Newsreader'] text-[#003331]">GoClub</h1>
+<h1 class="text-2xl font-black headline-font text-[#003331]">GoClub</h1>
 <p class="text-xs opacity-70 uppercase tracking-widest font-bold">The Knowledge Archive</p>
 </div>
 </div>
@@ -220,7 +241,7 @@
 </div>
 </div>
 <div class="w-full md:w-64 h-48 rounded-xl overflow-hidden shadow-2xl z-10 rotate-3">
-<img alt="Code editor" class="w-full h-full object-cover" data-alt="Close-up of a high-resolution laptop screen displaying clean lines of JavaScript code in a dark editorial-style editor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr7IXAJ706W3mmX21TqOkPzJf-NStN18Srfe21NggIvvANu672NtafPirn0VxPPUVgiJ8HNRoT_kY1eCjwG8LgaUmKGiAsJP81-M_MPBke5hrTpICS9Ba-BPVNXVr4PZjCgrBgEIPLEgrEjq4HqYUDTByhBb8uNxsq2uQCb4QjpnfqqC2gRsU9_ogoSg30nTTDkbl2rXUk__OHzCO--ZlmBfCVb7b42h1nc_H_OQmpDBSOIPF8t8vMD5EBwHh0nYZbew_Kb1kT9RM"/>
+<img alt="GoClub 站点预览" class="w-full h-full object-cover" data-alt="GoClub 站点预览图" src="pictures/主页.png"/>
 </div>
 </div>
 <!-- Bento Card: Backend -->
@@ -249,13 +270,13 @@
 <footer class="bg-[#f4f4f0] dark:bg-[#1b1c1a] text-[#004b49] dark:text-[#bfc8c7] w-full py-12 mt-auto border-none">
 <div class="max-w-[54rem] mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-8">
 <div class="text-center md:text-left">
-<span class="font-['Newsreader'] italic text-[#003331] text-lg block mb-1">GoClub Knowledge Base</span>
-<p class="font-['Manrope'] text-sm opacity-70">© GoClub Knowledge Base. Curated for the community.</p>
+<span class="headline-font italic text-[#003331] text-lg block mb-1">GoClub Knowledge Base</span>
+<p class="text-sm opacity-70">© GoClub Knowledge Base. Curated for the community.</p>
 </div>
 <nav class="flex gap-8">
-<a class="text-[#1b1c1a] dark:text-[#bfc8c7] font-['Manrope'] text-sm hover:text-[#a33d23] hover:underline transition-colors duration-200" href="#">Edit on GitHub</a>
-<a class="text-[#1b1c1a] dark:text-[#bfc8c7] font-['Manrope'] text-sm hover:text-[#a33d23] hover:underline transition-colors duration-200" href="#">Last Updated</a>
-<a class="text-[#1b1c1a] dark:text-[#bfc8c7] font-['Manrope'] text-sm hover:text-[#a33d23] hover:underline transition-colors duration-200" href="#">Contributors</a>
+<a class="text-[#1b1c1a] dark:text-[#bfc8c7] text-sm hover:text-[#a33d23] hover:underline transition-colors duration-200" href="#">Edit on GitHub</a>
+<a class="text-[#1b1c1a] dark:text-[#bfc8c7] text-sm hover:text-[#a33d23] hover:underline transition-colors duration-200" href="#">Last Updated</a>
+<a class="text-[#1b1c1a] dark:text-[#bfc8c7] text-sm hover:text-[#a33d23] hover:underline transition-colors duration-200" href="#">Contributors</a>
 </nav>
 </div>
 </footer>
