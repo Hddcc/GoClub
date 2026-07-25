@@ -269,6 +269,12 @@ body{background:var(--layer-page) fixed}
 [data-theme="dark"] .source-item,[data-theme="dark"] pre,[data-theme="dark"] .framework-step,[data-theme="dark"] .md-pill,[data-theme="dark"] .pill,[data-theme="dark"] .sub-item.active,[data-theme="dark"] .badge,[data-theme="dark"] .timer,[data-theme="dark"] .table th{background:var(--glass-chip);border-color:var(--stroke-strong);box-shadow:0 1px 0 rgba(255,255,255,.08) inset}
 .nav-btn,.tool-btn{box-shadow:0 10px 24px rgba(15,23,42,.08),0 1px 0 rgba(255,255,255,.55) inset}
 .nav-btn.primary,.tool-btn.primary{box-shadow:0 14px 30px var(--accent-glow),0 1px 0 rgba(255,255,255,.24) inset}
+/* Keep blur on small, stationary chrome only. Large surfaces inside the
+   scrolling pane otherwise force expensive backdrop repaints while scrolling. */
+.main .markdown-doc,.main .section-card,.main .panel,.main .hero,.main .quiz-item,.main .card-face,.main .search-result,.main .mentor-card,.main .score-card,.main .lv-block,.main .table,.main blockquote{
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:1080px){.light-link{display:none}.search-box{width:170px}.search-box:focus{width:220px}.main{padding:24px}.card-grid{grid-template-columns:1fr}}
 @media(max-width:720px){
@@ -687,29 +693,33 @@ function renderIntro(app){
   app.innerHTML=sb+mn;
   const main=document.querySelector('.main');
   if(main){
+    const sections=[...main.querySelectorAll('.md-section[id^="intro-sec-"]')];
+    const mainTop=main.getBoundingClientRect().top;
+    const sectionPositions=sections.map(el=>main.scrollTop+el.getBoundingClientRect().top-mainTop);
     let ticking=false;
     main.addEventListener('scroll',()=>{
       if(ticking)return;
       ticking=true;
-      requestAnimationFrame(()=>{syncIntroActive();ticking=false});
+      requestAnimationFrame(()=>{
+        syncIntroActive(main,sections,sectionPositions);
+        ticking=false;
+      });
     },{passive:true});
     if(S.sec>0)requestAnimationFrame(()=>goIntro(S.sec));
-    else syncIntroActive();
+    else syncIntroActive(main,sections,sectionPositions);
   }
 }
 
-function syncIntroActive(){
+function syncIntroActive(main,sections,sectionPositions){
   if(S.mode!=='intro')return;
-  const main=document.querySelector('.main');
-  if(!main)return;
-  const sections=[...main.querySelectorAll('.md-section[id^="intro-sec-"]')];
-  if(!sections.length)return;
-  const mainTop=main.getBoundingClientRect().top;
+  if(!main||!sections.length)return;
+  const target=main.scrollTop+28;
   let active=0,best=Infinity;
-  sections.forEach((el,idx)=>{
-    const delta=Math.abs(el.getBoundingClientRect().top-mainTop-28);
+  sectionPositions.forEach((top,idx)=>{
+    const delta=Math.abs(top-target);
     if(delta<best){best=delta;active=idx}
   });
+  if(active===S.sec)return;
   S.sec=active;
   document.querySelectorAll('.sidebar .side-item').forEach((el,idx)=>el.classList.toggle('active',idx===active));
   sections.forEach((el,idx)=>el.classList.toggle('active',idx===active));
