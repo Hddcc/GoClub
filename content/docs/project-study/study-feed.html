@@ -431,6 +431,12 @@ body{background:var(--layer-page) fixed}
 .nav-btn:hover .arrow-icon{transform:translateX(2px)}
 .nav-btn,.tool-btn{box-shadow:0 10px 24px rgba(15,23,42,.08),0 1px 0 rgba(255,255,255,.55) inset}
 .nav-btn.primary,.tool-btn.primary,.tool-btn{box-shadow:0 14px 30px var(--accent-glow),0 1px 0 rgba(255,255,255,.24) inset}
+/* Keep blur on small, stationary chrome only. Large surfaces inside the
+   scrolling pane otherwise force expensive backdrop repaints while scrolling. */
+.main .markdown-doc,.main .section-card,.main .day-panel,.main .panel,.main .hero,.main .breakdown-hero,.main .intro-card,.main .quiz-item,.main .card-face,.main .scenario-card,.main .search-result,.main .mentor-card,.main .score-card,.main .lv-block,.main .appendix-table,.main blockquote{
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
 /* ═══════════ RESPONSIVE ═══════════ */
 @media(max-width:900px){
   .sidebar{width:220px;min-width:220px}
@@ -1548,29 +1554,33 @@ function renderIntro(app){
   app.innerHTML=sb+mn;
   const main=document.querySelector('.main');
   if(main){
+    const sections=[...main.querySelectorAll('.md-section[id^="intro-sec-"]')];
+    const mainTop=main.getBoundingClientRect().top;
+    const sectionPositions=sections.map(el=>main.scrollTop+el.getBoundingClientRect().top-mainTop);
     let ticking=false;
     main.addEventListener('scroll',()=>{
       if(ticking)return;
       ticking=true;
-      requestAnimationFrame(()=>{syncIntroActive();ticking=false});
+      requestAnimationFrame(()=>{
+        syncIntroActive(main,sections,sectionPositions);
+        ticking=false;
+      });
     },{passive:true});
     if(S.sec>0)requestAnimationFrame(()=>goIntro(S.sec));
-    else syncIntroActive();
+    else syncIntroActive(main,sections,sectionPositions);
   }
 }
 
-function syncIntroActive(){
+function syncIntroActive(main,sections,sectionPositions){
   if(S.mode!=='intro')return;
-  const main=document.querySelector('.main');
-  if(!main)return;
-  const sections=[...main.querySelectorAll('.md-section[id^="intro-sec-"]')];
-  if(!sections.length)return;
-  const mainTop=main.getBoundingClientRect().top;
+  if(!main||!sections.length)return;
+  const target=main.scrollTop+28;
   let active=0,best=Infinity;
-  sections.forEach((el,idx)=>{
-    const delta=Math.abs(el.getBoundingClientRect().top-mainTop-28);
+  sectionPositions.forEach((top,idx)=>{
+    const delta=Math.abs(top-target);
     if(delta<best){best=delta;active=idx}
   });
+  if(active===S.sec)return;
   S.sec=active;
   document.querySelectorAll('.sidebar .side-item').forEach((el,idx)=>el.classList.toggle('active',idx===active));
   sections.forEach((el,idx)=>el.classList.toggle('active',idx===active));
