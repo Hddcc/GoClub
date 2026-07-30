@@ -3675,10 +3675,12 @@ body {
   padding: 0.65rem 1rem;
   border-radius: 999px;
   background: var(--goclub-primary-action);
-  color: var(--goclub-on-primary-action);
+  color: var(--goclub-on-primary-action) !important;
   font-size: 0.88rem;
   font-weight: 750;
   text-decoration: none;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
 }
 
 .goclub-feedback-button:hover,
