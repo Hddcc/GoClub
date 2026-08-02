@@ -154,6 +154,25 @@ class MarkdownSafetyTests(unittest.TestCase):
             "`[代码示例](javascript:alert('x'))`",
         )
 
+    def test_neutralizes_hugo_shortcodes_in_text_and_code(self):
+        source = (
+            "{{% html %}}<img src=x onerror=alert('x')>{{% /html %}}\n"
+            "`{{< badge value=\"示例\" >}}`\n"
+            "```html\n"
+            "{{% html %}}<img src=x onerror=alert('x')>{{% /html %}}\n"
+            "```"
+        )
+
+        self.assertEqual(
+            sanitize_markdown(source),
+            "{{%/* html */%}}&lt;img src=x onerror=alert('x')&gt;"
+            "{{%/* /html */%}}\n"
+            "`{{</* badge value=\"示例\" */>}}`\n"
+            "```html\n"
+            "{{%/* html */%}}<img src=x onerror=alert('x')>{{%/* /html */%}}\n"
+            "```",
+        )
+
 
 class DailyQuestionContentTests(unittest.TestCase):
     def test_inserts_new_submission_before_first_existing_date(self):
@@ -216,6 +235,33 @@ class DailyQuestionContentTests(unittest.TestCase):
 
         self.assertTrue(changed)
         self.assertIn("## 2026.08.02\n\n### 有效题目", updated)
+
+    def test_does_not_treat_a_date_inside_fenced_code_as_a_duplicate(self):
+        for fence in ["```", "~~~"]:
+            with self.subTest(fence=fence):
+                existing = (
+                    "说明\n\n"
+                    f"{fence}markdown\n"
+                    "## 2026.08.02\n"
+                    f"{fence}\n\n"
+                    "## 2026.08.01\n\n"
+                    "### 历史题目\n\n"
+                    "历史答案\n"
+                )
+                submission = prepare_submission(
+                    "有效题目",
+                    "有效答案",
+                    "2026-08-02T18:00:00+08:00",
+                )
+
+                updated, changed = update_content(existing, submission)
+
+                self.assertTrue(changed)
+                self.assertIn("## 2026.08.02\n\n### 有效题目", updated)
+                self.assertIn(
+                    f"{fence}\n\n## 2026.08.02\n\n### 有效题目",
+                    updated,
+                )
 
 
 class FileSyncTests(unittest.TestCase):

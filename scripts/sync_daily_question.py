@@ -25,6 +25,8 @@ REFERENCE_LINK_DESTINATION = re.compile(
     r"(?P<scheme>(?:[A-Za-z0-9+.-]|\\|[\x00-\x20])+):"
 )
 DANGEROUS_URL_SCHEMES = {"javascript", "vbscript", "data", "file"}
+PERCENT_SHORTCODE = re.compile(r"{{%(?P<body>.*?)%}}", re.DOTALL)
+ANGLE_SHORTCODE = re.compile(r"{{<(?P<body>.*?)>}}", re.DOTALL)
 DEFAULT_CONTENT_PATH = (
     Path(__file__).resolve().parents[1]
     / "content"
@@ -118,6 +120,24 @@ def _escape_outside_inline_code(line):
     return "".join(parts)
 
 
+def _neutralize_hugo_shortcodes(value):
+    def escape(match, opening, closing):
+        body = match.group("body")
+        if body.startswith("/*") and body.endswith("*/"):
+            return match.group(0)
+        body = body.replace("*/", "*&#47;")
+        return f"{opening}/*{body}*/{closing}"
+
+    value = PERCENT_SHORTCODE.sub(
+        lambda match: escape(match, "{{%", "%}}"),
+        value,
+    )
+    return ANGLE_SHORTCODE.sub(
+        lambda match: escape(match, "{{<", ">}}"),
+        value,
+    )
+
+
 def sanitize_markdown(value):
     lines = value.split("\n")
     sanitized = []
@@ -187,12 +207,53 @@ def sanitize_markdown(value):
         else:
             previous_line_blank = True
 
-    return "\n".join(sanitized)
+    return _neutralize_hugo_shortcodes("\n".join(sanitized))
+
+
+def _find_date_heading(value, date=None):
+    expected_date = re.escape(date) if date is not None else r"\d{4}\.\d{2}\.\d{2}"
+    heading = re.compile(
+        rf"##[ \t]+{expected_date}(?:[ \t]+#+)?[ \t]*$"
+    )
+    fence_character = None
+    fence_length = 0
+    offset = 0
+
+    for line_with_ending in value.splitlines(keepends=True):
+        line = line_with_ending.rstrip("\r\n")
+        indented = len(line) - len(line.lstrip(" "))
+        stripped = line[indented:]
+
+        if fence_character is not None:
+            closing = re.fullmatch(
+                rf"{re.escape(fence_character)}{{{fence_length},}}[ \t]*",
+                stripped,
+            )
+            if indented <= 3 and closing is not None:
+                fence_character = None
+                fence_length = 0
+            offset += len(line_with_ending)
+            continue
+
+        opening = re.match(r"(`{3,}|~{3,})(.*)$", stripped) if indented <= 3 else None
+        if opening is not None:
+            delimiter = opening.group(1)
+            if not (delimiter[0] == "`" and "`" in opening.group(2)):
+                fence_character = delimiter[0]
+                fence_length = len(delimiter)
+                offset += len(line_with_ending)
+                continue
+
+        if indented <= 3 and heading.fullmatch(stripped) is not None:
+            return offset
+
+        offset += len(line_with_ending)
+
+    return None
 
 
 def update_content(existing, submission):
-    date_heading = re.compile(rf"^## {re.escape(submission.date)}\r?$", re.MULTILINE)
-    if date_heading.search(existing) is not None:
+    if _find_date_heading(existing, submission.date) is not None:
         return existing, False
 
     newline = "\r\n" if "\r\n" in existing else "\n"
@@ -204,13 +265,8 @@ def update_content(existing, submission):
         f"{answer}{newline}{newline}"
     )
 
-    first_date_heading = re.search(
-        r"^## \d{4}\.\d{2}\.\d{2}\r?$",
-        existing,
-        re.MULTILINE,
-    )
-    if first_date_heading is not None:
-        position = first_date_heading.start()
+    position = _find_date_heading(existing)
+    if position is not None:
         return existing[:position] + entry + existing[position:], True
 
     if not existing or existing.endswith(newline * 2):
