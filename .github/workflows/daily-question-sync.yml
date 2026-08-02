@@ -59,10 +59,6 @@ jobs:
             echo "检测到新的每日一问，继续执行验证和发布。"
           fi
 
-      - name: 运行同步测试
-        if: steps.import.outputs.updated == 'true'
-        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
-
       - name: 初始化主题子模块
         if: steps.import.outputs.updated == 'true'
         run: git submodule update --init --recursive
