@@ -24,6 +24,12 @@ SCRIPT_PATH = PROJECT_ROOT / "scripts" / "sync_daily_question.py"
 
 
 class SubmissionDateTests(unittest.TestCase):
+    def test_accepts_feishu_date_as_shanghai_calendar_date(self):
+        self.assertEqual(
+            parse_submission_date("2026/08/02"),
+            "2026.08.02",
+        )
+
     def test_converts_utc_timestamp_to_shanghai_date(self):
         self.assertEqual(
             parse_submission_date("2026-08-01T16:30:00Z"),

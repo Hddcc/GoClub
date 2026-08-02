@@ -45,6 +45,8 @@ def parse_submission_date(value):
     if not isinstance(value, str):
         raise ValueError("提交时间必须是字符串")
     try:
+        if re.fullmatch(r"\d{4}/\d{2}/\d{2}", value):
+            return datetime.strptime(value, "%Y/%m/%d").strftime("%Y.%m.%d")
         timestamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as error:
         raise ValueError("提交时间格式无效") from error
