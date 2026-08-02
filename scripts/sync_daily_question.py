@@ -16,14 +16,15 @@ import tempfile
 SHANGHAI_TZ = timezone(timedelta(hours=8), "Asia/Shanghai")
 MAX_QUESTION_LENGTH = 500
 MAX_ANSWER_LENGTH = 20000
-DANGEROUS_INLINE_LINK = re.compile(
-    r"(?i)(?P<prefix>\]\(\s*<?\s*)"
-    r"(?P<scheme>javascript|vbscript|data|file):"
+INLINE_LINK_DESTINATION = re.compile(
+    r"(?P<prefix>\]\(\s*<?\s*)"
+    r"(?P<scheme>(?:[A-Za-z0-9+.-]|\\|[\x00-\x20])+):"
 )
-DANGEROUS_REFERENCE_LINK = re.compile(
-    r"(?i)(?P<prefix>^\s{0,3}\[[^\]\r\n]+\]:\s*<?\s*)"
-    r"(?P<scheme>javascript|vbscript|data|file):"
+REFERENCE_LINK_DESTINATION = re.compile(
+    r"(?P<prefix>^\s{0,3}\[[^\]\r\n]+\]:\s*<?\s*)"
+    r"(?P<scheme>(?:[A-Za-z0-9+.-]|\\|[\x00-\x20])+):"
 )
+DANGEROUS_URL_SCHEMES = {"javascript", "vbscript", "data", "file"}
 DEFAULT_CONTENT_PATH = (
     Path(__file__).resolve().parents[1]
     / "content"
@@ -76,10 +77,13 @@ def prepare_submission(question, answer, submitted_at):
 
 def _escape_plain_markdown(value):
     def neutralize(match):
-        return f"{match.group('prefix')}{match.group('scheme')}%3A"
+        scheme = re.sub(r"[\\\x00-\x20]", "", match.group("scheme"))
+        if scheme.lower() not in DANGEROUS_URL_SCHEMES:
+            return match.group(0)
+        return f"{match.group('prefix')}{scheme}%3A"
 
-    value = DANGEROUS_INLINE_LINK.sub(neutralize, value)
-    value = DANGEROUS_REFERENCE_LINK.sub(neutralize, value)
+    value = INLINE_LINK_DESTINATION.sub(neutralize, value)
+    value = REFERENCE_LINK_DESTINATION.sub(neutralize, value)
     return html.escape(value, quote=False)
 
 
@@ -118,8 +122,9 @@ def sanitize_markdown(value):
     fence_character = None
     fence_length = 0
     indented_code = False
+    indented_code_minimum = 4
     previous_line_blank = True
-    list_context = False
+    list_code_indent = None
 
     for line in lines:
         indented = len(line) - len(line.lstrip(" "))
@@ -139,13 +144,15 @@ def sanitize_markdown(value):
             continue
 
         if indented_code:
-            if not stripped or indented >= 4:
+            if not stripped or indented >= indented_code_minimum:
                 sanitized.append(line)
                 continue
             indented_code = False
 
-        if indented >= 4 and previous_line_blank and not list_context:
+        required_code_indent = list_code_indent or 4
+        if indented >= required_code_indent and previous_line_blank:
             indented_code = True
+            indented_code_minimum = required_code_indent
             sanitized.append(line)
             previous_line_blank = False
             continue
@@ -166,10 +173,14 @@ def sanitize_markdown(value):
 
         sanitized.append(_escape_outside_inline_code(line))
         if stripped:
-            if re.match(r"(?:[-+*]|\d+[.)])\s+", stripped) is not None:
-                list_context = True
+            list_marker = re.match(
+                r"(?:[-+*]|\d{1,9}[.)])(?: {1,4}|\t)",
+                stripped,
+            )
+            if list_marker is not None:
+                list_code_indent = indented + list_marker.end() + 4
             elif indented == 0:
-                list_context = False
+                list_code_indent = None
             previous_line_blank = False
         else:
             previous_line_blank = True

@@ -117,6 +117,11 @@ class MarkdownSafetyTests(unittest.TestCase):
 
         self.assertEqual(sanitize_markdown(source), source)
 
+    def test_preserves_an_indented_code_block_inside_a_list(self):
+        source = "- 列表项\n\n      if x < y:\n          print('&')"
+
+        self.assertEqual(sanitize_markdown(source), source)
+
     def test_escapes_indented_html_inside_a_list(self):
         source = "- 列表项\n\n    <script>alert('x')</script>"
 
@@ -128,6 +133,7 @@ class MarkdownSafetyTests(unittest.TestCase):
     def test_neutralizes_executable_markdown_link_destinations(self):
         source = (
             "[脚本链接](javascript:alert('x'))\n"
+            "[转义脚本链接](javascript\\:alert('x'))\n"
             "[数据链接][payload]\n"
             "[payload]: data:text/html,<script>alert('x')</script>\n"
             "`[代码示例](javascript:alert('x'))`"
@@ -136,6 +142,7 @@ class MarkdownSafetyTests(unittest.TestCase):
         self.assertEqual(
             sanitize_markdown(source),
             "[脚本链接](javascript%3Aalert('x'))\n"
+            "[转义脚本链接](javascript%3Aalert('x'))\n"
             "[数据链接][payload]\n"
             "[payload]: data%3Atext/html,&lt;script&gt;alert('x')&lt;/script&gt;\n"
             "`[代码示例](javascript:alert('x'))`",
