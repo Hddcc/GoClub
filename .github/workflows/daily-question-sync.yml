@@ -1,0 +1,103 @@
+name: 同步每日一问
+
+on:
+  workflow_dispatch:
+    inputs:
+      question:
+        description: 每日一问题目
+        required: true
+        type: string
+      answer:
+        description: 每日一问答案
+        required: true
+        type: string
+      submitted_at:
+        description: 带时区的投稿创建时间
+        required: true
+        type: string
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: ${{ github.repository }}-daily-question-sync
+  cancel-in-progress: false
+
+env:
+  DAILY_QUESTION_PATH: content/docs/baguwen/每日一问.md
+  DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+  HUGO_VERSION: 0.159.0
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  sync:
+    name: 校验、入库并发布
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出最新默认分支
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.repository.default_branch }}
+          submodules: false
+
+      - name: 同步投稿内容
+        id: import
+        shell: bash
+        run: |
+          python3 scripts/sync_daily_question.py \
+            --payload "$GITHUB_EVENT_PATH" \
+            --content "$DAILY_QUESTION_PATH"
+
+          if git diff --quiet -- "$DAILY_QUESTION_PATH"; then
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+            echo "当日已有正式条目，本次同步无变更。"
+          else
+            echo "updated=true" >> "$GITHUB_OUTPUT"
+            echo "检测到新的每日一问，继续执行验证和发布。"
+          fi
+
+      - name: 初始化主题子模块
+        if: steps.import.outputs.updated == 'true'
+        run: git submodule update --init --recursive
+
+      - name: 安装 Hugo
+        if: steps.import.outputs.updated == 'true'
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
+          extended: true
+
+      - name: 构建整站
+        if: steps.import.outputs.updated == 'true'
+        run: hugo --minify
+
+      - name: 校验待提交文件
+        if: steps.import.outputs.updated == 'true'
+        shell: bash
+        run: |
+          changed_files="$(git -c core.quotepath=false diff --name-only)"
+          if [[ "$changed_files" != "$DAILY_QUESTION_PATH" ]]; then
+            echo "同步产生了每日一问之外的改动：" >&2
+            echo "$changed_files" >&2
+            exit 1
+          fi
+          git diff --check -- "$DAILY_QUESTION_PATH"
+
+      - name: 提交并推送内容
+        if: steps.import.outputs.updated == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$DAILY_QUESTION_PATH"
+          git commit -m "更新每日一问"
+          git push origin "HEAD:$DEFAULT_BRANCH"
+
+      - name: 触发现有 Pages 发布工作流
+        if: steps.import.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run static.yml --ref "$DEFAULT_BRANCH"
