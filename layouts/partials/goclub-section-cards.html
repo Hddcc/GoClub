@@ -7,40 +7,21 @@
 {{ end }}
 
 {{ if gt (len $items) 0 }}
-  {{ $featured := index $items 0 }}
   <section class="section-index-shell">
-    <div class="section-stats">
-      <div class="section-stat">
-        <span class="section-stat-label">当前栏目</span>
-        <span class="section-stat-value">{{ partial "docs/title" . }}</span>
-      </div>
-      <div class="section-stat">
-        <span class="section-stat-label">内容数量</span>
-        <span class="section-stat-value">{{ len $items }}</span>
-      </div>
-    </div>
     <div class="section-card-grid">
       {{ range $item := $items }}
-        {{ $summary := partial "goclub/lead-summary.html" $item | default "点击进入查看完整内容。" }}
-        {{ $kind := cond $item.IsSection "栏目" "文档" }}
-        {{ $isFeatured := eq $item.RelPermalink $featured.RelPermalink }}
-        <a class="section-card {{ if $isFeatured }}section-card-featured{{ end }}" href="{{ $item.RelPermalink }}">
-          <span class="section-card-kind">{{ if $isFeatured }}优先推荐{{ else }}{{ $kind }}{{ end }}</span>
+        {{ $summary := partial "goclub/lead-summary.html" $item }}
+        <a class="section-card" href="{{ $item.RelPermalink }}">
           <div class="section-card-title">{{ partial "docs/title" $item }}</div>
-          <div class="section-card-summary">{{ $summary }}</div>
+          {{ with $summary }}
+            <div class="section-card-summary">{{ . }}</div>
+          {{ end }}
           <div class="section-card-meta">
             {{ if $item.IsSection }}
               <span>{{ len (where $item.Pages "Params.bookHidden" "ne" true) }} 个子页面</span>
-            {{ else }}
-              <span>进入阅读</span>
             {{ end }}
             <span class="section-card-arrow">→</span>
           </div>
-          {{ if $isFeatured }}
-            <div class="section-card-visual">
-              <img src="{{ "/pictures/八股总结.png" | relURL }}" alt="{{ partial "docs/title" $item }}">
-            </div>
-          {{ end }}
         </a>
       {{ end }}
     </div>

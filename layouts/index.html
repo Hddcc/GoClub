@@ -2,94 +2,50 @@
   {{ $docs := .Site.GetPage "section" "docs" }}
   {{ $submitPage := .Site.GetPage "/docs/blog/提交流程.md" }}
   {{ $githubURL := "https://github.com/LeoninCS/GoClub" }}
-  {{ $docsPages := slice }}
   {{ $cards := slice }}
   {{ with $docs }}
     {{ range where .Pages "Params.bookHidden" "ne" true }}
       {{ if and .IsSection .Content }}
-        {{ $docsPages = $docsPages | append . }}
         {{ $cards = $cards | append . }}
       {{ end }}
     {{ end }}
   {{ end }}
 
-  {{ $featuredCard := index $cards 0 }}
-  {{ if gt (len $cards) 2 }}
-    {{ $featuredCard = index $cards 2 }}
-  {{ end }}
-
   <article class="markdown book-article">
     <section class="page-hero">
-      <span class="page-hero-kicker">GoClub</span>
-      <h1>面试准备、系统复习与内容共建知识库</h1>
+      <h1>Go 面试知识库</h1>
       <div class="page-hero-copy">
-        <p>GoClub 以知识站的方式整理技术面试内容，把八股总结、真实面经、学习路径和社区投稿入口放进同一个清晰的导航体系里，方便阅读，也方便一起维护。</p>
+        <p>八股总结、面试真题、学习资源和配套文章，按栏目整理，社区一起维护。发现错漏或想补充内容，提个 PR 就行。</p>
       </div>
       <div class="page-hero-actions">
-        <a class="page-hero-button" href="{{ $githubURL }}" target="_blank" rel="noopener noreferrer">进入 GitHub 仓库</a>
+        <a class="page-hero-button" href="{{ $githubURL }}" target="_blank" rel="noopener noreferrer">GitHub 仓库</a>
         {{ with $submitPage }}
-          <a class="page-hero-button-secondary" href="{{ .RelPermalink }}">查看投稿流程</a>
+          <a class="page-hero-button-secondary" href="{{ .RelPermalink }}">投稿流程</a>
         {{ end }}
-      </div>
-      <div class="hero-metrics">
-        <div class="hero-metric">
-          <span class="hero-metric-value">{{ len $docsPages }}</span>
-          <span class="hero-metric-label">核心栏目</span>
-        </div>
-        <div class="hero-metric">
-          <span class="hero-metric-value">Hugo</span>
-          <span class="hero-metric-label">静态站点方案</span>
-        </div>
-        <div class="hero-metric">
-          <span class="hero-metric-value">GitHub</span>
-          <span class="hero-metric-label">协作共建入口</span>
-        </div>
       </div>
     </section>
 
     {{ $content := partial "goclub/stripped-content.html" . }}
     {{- $content | safeHTML -}}
 
-    <section class="homepage-github-callout">
-      <span class="homepage-github-label">社区共建</span>
-      <div class="homepage-github-title">内容更新、纠错补充和新稿投稿都从这里进入</div>
-      <div class="homepage-github-url">
-        <a href="{{ $githubURL }}" target="_blank" rel="noopener noreferrer">{{ $githubURL }}</a>
-      </div>
-      <p>如果你已经安装了 Hugo，可以直接拉起本地预览；如果你是第一次参与，也可以先阅读投稿流程，从 fork、添加内容到提 PR 的步骤都已经整理好了。</p>
-      <div class="homepage-github-actions">
-        <a class="homepage-github-button" href="{{ $githubURL }}" target="_blank" rel="noopener noreferrer">去 GitHub 协作</a>
-        {{ with $submitPage }}
-          <a class="homepage-github-secondary" href="{{ .RelPermalink }}">新贡献者先看这里</a>
-        {{ end }}
-      </div>
-    </section>
-
-    {{ with $docs }}
     <section class="entry-cluster">
-      <div class="entry-cluster-title">按栏目快速开始</div>
+      <div class="entry-cluster-title">栏目</div>
       <div class="section-card-grid">
-        {{ range $index, $page := $cards }}
-          {{ $summary := partial "goclub/lead-summary.html" $page | default "进入该栏目，查看对应方向的内容与导航。" }}
-          {{ $children := where $page.Pages "Params.bookHidden" "ne" true }}
-          {{ $isFeatured := and $featuredCard (eq $page.RelPermalink $featuredCard.RelPermalink) }}
-          <a class="section-card {{ if $isFeatured }}section-card-featured{{ end }}" href="{{ $page.RelPermalink }}">
-            <span class="section-card-kind">{{ if $isFeatured }}重点栏目{{ else }}栏目入口{{ end }}</span>
-            <div class="section-card-title">{{ partial "docs/title" $page }}</div>
-            <div class="section-card-summary">{{ $summary }}</div>
+        {{ range $cards }}
+          {{ $summary := partial "goclub/lead-summary.html" . }}
+          {{ $children := where .Pages "Params.bookHidden" "ne" true }}
+          <a class="section-card" href="{{ .RelPermalink }}">
+            <div class="section-card-title">{{ partial "docs/title" . }}</div>
+            {{ with $summary }}
+              <div class="section-card-summary">{{ . }}</div>
+            {{ end }}
             <div class="section-card-meta">
               <span>{{ len $children }} 个页面</span>
               <span class="section-card-arrow">→</span>
             </div>
-            {{ if $isFeatured }}
-              <div class="section-card-visual">
-                <img src="{{ "/pictures/主页.png" | relURL }}" alt="{{ partial "docs/title" $page }}">
-              </div>
-            {{ end }}
           </a>
         {{ end }}
       </div>
     </section>
-    {{ end }}
   </article>
 {{ end }}
