@@ -16,6 +16,14 @@ import tempfile
 SHANGHAI_TZ = timezone(timedelta(hours=8), "Asia/Shanghai")
 MAX_QUESTION_LENGTH = 500
 MAX_ANSWER_LENGTH = 20000
+DANGEROUS_INLINE_LINK = re.compile(
+    r"(?i)(?P<prefix>\]\(\s*<?\s*)"
+    r"(?P<scheme>javascript|vbscript|data|file):"
+)
+DANGEROUS_REFERENCE_LINK = re.compile(
+    r"(?i)(?P<prefix>^\s{0,3}\[[^\]\r\n]+\]:\s*<?\s*)"
+    r"(?P<scheme>javascript|vbscript|data|file):"
+)
 DEFAULT_CONTENT_PATH = (
     Path(__file__).resolve().parents[1]
     / "content"
@@ -66,16 +74,25 @@ def prepare_submission(question, answer, submitted_at):
     )
 
 
+def _escape_plain_markdown(value):
+    def neutralize(match):
+        return f"{match.group('prefix')}{match.group('scheme')}%3A"
+
+    value = DANGEROUS_INLINE_LINK.sub(neutralize, value)
+    value = DANGEROUS_REFERENCE_LINK.sub(neutralize, value)
+    return html.escape(value, quote=False)
+
+
 def _escape_outside_inline_code(line):
     parts = []
     position = 0
     while position < len(line):
         start = line.find("`", position)
         if start < 0:
-            parts.append(html.escape(line[position:], quote=False))
+            parts.append(_escape_plain_markdown(line[position:]))
             break
 
-        parts.append(html.escape(line[position:start], quote=False))
+        parts.append(_escape_plain_markdown(line[position:start]))
         run_length = 1
         while start + run_length < len(line) and line[start + run_length] == "`":
             run_length += 1
@@ -85,7 +102,7 @@ def _escape_outside_inline_code(line):
             start + run_length,
         )
         if closing is None:
-            parts.append(html.escape(line[start:], quote=False))
+            parts.append(_escape_plain_markdown(line[start:]))
             break
 
         end = closing.end()
@@ -100,6 +117,9 @@ def sanitize_markdown(value):
     sanitized = []
     fence_character = None
     fence_length = 0
+    indented_code = False
+    previous_line_blank = True
+    list_context = False
 
     for line in lines:
         indented = len(line) - len(line.lstrip(" "))
@@ -118,7 +138,25 @@ def sanitize_markdown(value):
                 fence_length = 0
             continue
 
+        if indented_code:
+            if not stripped or indented >= 4:
+                sanitized.append(line)
+                continue
+            indented_code = False
+
+        if indented >= 4 and previous_line_blank and not list_context:
+            indented_code = True
+            sanitized.append(line)
+            previous_line_blank = False
+            continue
+
         opening = re.match(r"(`{3,}|~{3,})", stripped) if indented <= 3 else None
+        if (
+            opening is not None
+            and opening.group(0).startswith("`")
+            and "`" in stripped[opening.end() :]
+        ):
+            opening = None
         if opening is not None:
             delimiter = opening.group(0)
             fence_character = delimiter[0]
@@ -127,6 +165,14 @@ def sanitize_markdown(value):
             continue
 
         sanitized.append(_escape_outside_inline_code(line))
+        if stripped:
+            if re.match(r"(?:[-+*]|\d+[.)])\s+", stripped) is not None:
+                list_context = True
+            elif indented == 0:
+                list_context = False
+            previous_line_blank = False
+        else:
+            previous_line_blank = True
 
     return "\n".join(sanitized)
 
