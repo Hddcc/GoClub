@@ -28,6 +28,7 @@ env:
   DAILY_QUESTION_PATH: content/docs/baguwen/每日一问.md
   DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
   HUGO_VERSION: 0.159.0
+  PYTHONDONTWRITEBYTECODE: "1"
 
 jobs:
   sync:
