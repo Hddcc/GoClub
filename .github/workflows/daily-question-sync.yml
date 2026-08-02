@@ -82,7 +82,7 @@ jobs:
         if: steps.import.outputs.updated == 'true'
         shell: bash
         run: |
-          changed_files="$(git diff --name-only)"
+          changed_files="$(git -c core.quotepath=false diff --name-only)"
           if [[ "$changed_files" != "$DAILY_QUESTION_PATH" ]]; then
             echo "同步产生了每日一问之外的改动：" >&2
             echo "$changed_files" >&2
