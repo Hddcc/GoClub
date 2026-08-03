@@ -1,0 +1,122 @@
+{{- /* Umami 访问统计：通过 Share Token 拉取公开统计数据渲染到页脚，失败时静默隐藏 */ -}}
+<style>
+.goclub-umami-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--goclub-muted-text, #838383);
+}
+.goclub-umami-stats b {
+  font-weight: 600;
+  color: var(--body-font-color, inherit);
+  font-variant-numeric: tabular-nums;
+}
+.goclub-umami-stats .goclub-umami-sep {
+  opacity: 0.4;
+}
+.goclub-umami-online-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 5px;
+  vertical-align: 1px;
+  animation: goclub-umami-pulse 2s ease-in-out infinite;
+}
+@keyframes goclub-umami-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+</style>
+<div class="goclub-umami-stats" id="goclubUmamiStats" hidden>
+  <span>总访问 <b data-umami-stat="pageviews">–</b></span>
+  <span class="goclub-umami-sep">·</span>
+  <span>访客 <b data-umami-stat="visitors">–</b></span>
+  <span class="goclub-umami-sep">·</span>
+  <span><span class="goclub-umami-online-dot"></span>在线 <b data-umami-stat="active">–</b></span>
+</div>
+<script>
+(function () {
+  var SHARE_ID = 'A3zxc0L6w5ZOZWyH';
+  var API_BASE = 'https://cloud.umami.is/analytics/us/api';
+  var CACHE_KEY = 'goclub_umami_cache';
+  var CACHE_TTL = 60 * 1000; // 统计数据缓存 60s，避免频繁请求
+
+  var rootEl = document.getElementById('goclubUmamiStats');
+  if (!rootEl) return;
+
+  function render(data) {
+    ['pageviews', 'visitors', 'active'].forEach(function (key) {
+      var el = rootEl.querySelector('[data-umami-stat="' + key + '"]');
+      if (el && typeof data[key] === 'number') {
+        el.textContent = data[key].toLocaleString('zh-CN');
+      }
+    });
+    rootEl.hidden = false;
+  }
+
+  function readCache() {
+    try {
+      var raw = sessionStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      var cached = JSON.parse(raw);
+      if (Date.now() - cached.at > CACHE_TTL) return null;
+      return cached;
+    } catch (e) { return null; }
+  }
+
+  function writeCache(data) {
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data: data }));
+    } catch (e) {}
+  }
+
+  function apiGet(path, token) {
+    return fetch(API_BASE + path, {
+      headers: {
+        'x-umami-share-token': token,
+        'x-umami-share-context': '1'
+      }
+    }).then(function (res) {
+      if (!res.ok) throw new Error('umami http ' + res.status);
+      return res.json();
+    });
+  }
+
+  var cached = readCache();
+  if (cached) {
+    render(cached.data);
+    return;
+  }
+
+  fetch(API_BASE + '/share/' + SHARE_ID)
+    .then(function (res) {
+      if (!res.ok) throw new Error('umami share http ' + res.status);
+      return res.json();
+    })
+    .then(function (share) {
+      var now = Date.now();
+      return Promise.all([
+        apiGet('/websites/' + share.websiteId + '/stats?startAt=0&endAt=' + now, share.token),
+        apiGet('/websites/' + share.websiteId + '/active', share.token)
+      ]);
+    })
+    .then(function (results) {
+      var data = {
+        pageviews: results[0].pageviews,
+        visitors: results[0].visitors,
+        active: results[1].visitors
+      };
+      writeCache(data);
+      render(data);
+    })
+    .catch(function () {
+      /* 拉取失败时保持隐藏，不影响页面 */
+    });
+})();
+</script>
