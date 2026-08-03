@@ -8,12 +8,21 @@
     <h3>{{ partial "docs/title" . }}</h3>
   </div>
 
-  <div class="goclub-umami-stats goclub-umami-stats--mobile" hidden>
-    <span><span class="goclub-umami-online-dot"></span>在线 <b data-umami-stat="active">–</b></span>
-    <span>今日 <b data-umami-stat="t_pageviews">–</b> / 总 <b data-umami-stat="pageviews">–</b></span>
-  </div>
-
   <label for="toc-control" class="goclub-mobile-header-button {{ if not (partial "docs/toc-show" .) }}is-hidden{{ end }}" aria-label="打开目录">
     <span class="goclub-mobile-header-icon" aria-hidden="true">☰</span>
   </label>
+
+  <div class="goclub-umami-stats goclub-umami-stats--mobile" hidden>
+    <span class="goclub-umami-online"><span class="goclub-umami-online-dot"></span>在线 <b data-umami-stat="active">–</b> 人</span>
+    <div class="goclub-umami-grid">
+      <span class="goclub-umami-row-label">今日</span>
+      <span class="goclub-umami-metric">浏览</span><b data-umami-stat="t_pageviews">–</b>
+      <span class="goclub-umami-metric">访客</span><b data-umami-stat="t_visitors">–</b>
+      <span class="goclub-umami-metric">访问</span><b data-umami-stat="t_visits">–</b>
+      <span class="goclub-umami-row-label">累计</span>
+      <span class="goclub-umami-metric">浏览</span><b data-umami-stat="pageviews">–</b>
+      <span class="goclub-umami-metric">访客</span><b data-umami-stat="visitors">–</b>
+      <span class="goclub-umami-metric">访问</span><b data-umami-stat="visits">–</b>
+    </div>
+  </div>
 </div>

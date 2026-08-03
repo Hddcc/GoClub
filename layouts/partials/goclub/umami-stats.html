@@ -32,6 +32,20 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
 }
+.goclub-umami-grid {
+  display: grid;
+  grid-template-columns: auto repeat(3, auto minmax(2.2em, auto));
+  column-gap: 6px;
+  row-gap: 3px;
+  align-items: baseline;
+  white-space: nowrap;
+}
+.goclub-umami-grid b {
+  text-align: right;
+}
+.goclub-umami-metric {
+  opacity: 0.85;
+}
 /* 侧边栏：顶部 brand 卡片上方，网格对齐 */
 .goclub-umami-stats--sidebar {
   display: flex;
@@ -42,19 +56,17 @@
   line-height: 1.4;
   margin: 0.15rem 0.15rem 0.7rem;
 }
-.goclub-umami-stats--sidebar .goclub-umami-grid {
-  display: grid;
-  grid-template-columns: auto repeat(3, auto minmax(2.2em, auto));
-  column-gap: 6px;
-  row-gap: 3px;
+/* 移动端顶栏：第二行跨整行，居中，窄屏自动换行 */
+.goclub-umami-stats--mobile {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: baseline;
-  white-space: nowrap;
-}
-.goclub-umami-stats--sidebar .goclub-umami-grid b {
-  text-align: right;
-}
-.goclub-umami-stats--sidebar .goclub-umami-metric {
-  opacity: 0.85;
+  gap: 3px 12px;
+  font-size: 0.66rem;
+  line-height: 1.35;
+  margin-top: 2px;
 }
 /* 移动端顶栏：右侧紧凑两行 */
 .goclub-umami-stats--mobile {
