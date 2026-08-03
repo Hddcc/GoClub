@@ -1,22 +1,16 @@
 <nav>
 <div class="goclub-umami-stats goclub-umami-stats--sidebar" hidden>
-  <span class="goclub-umami-row"><span class="goclub-umami-online-dot"></span>在线 <b data-umami-stat="active">–</b> 人</span>
-  <span class="goclub-umami-row">
+  <span class="goclub-umami-online"><span class="goclub-umami-online-dot"></span>在线 <b data-umami-stat="active">–</b> 人</span>
+  <div class="goclub-umami-grid">
     <span class="goclub-umami-row-label">今日</span>
-    <span>浏览 <b data-umami-stat="t_pageviews">–</b></span>
-    <span class="goclub-umami-sep">·</span>
-    <span>访客 <b data-umami-stat="t_visitors">–</b></span>
-    <span class="goclub-umami-sep">·</span>
-    <span>访问 <b data-umami-stat="t_visits">–</b></span>
-  </span>
-  <span class="goclub-umami-row">
+    <span class="goclub-umami-metric">浏览</span><b data-umami-stat="t_pageviews">–</b>
+    <span class="goclub-umami-metric">访客</span><b data-umami-stat="t_visitors">–</b>
+    <span class="goclub-umami-metric">访问</span><b data-umami-stat="t_visits">–</b>
     <span class="goclub-umami-row-label">累计</span>
-    <span>浏览 <b data-umami-stat="pageviews">–</b></span>
-    <span class="goclub-umami-sep">·</span>
-    <span>访客 <b data-umami-stat="visitors">–</b></span>
-    <span class="goclub-umami-sep">·</span>
-    <span>访问 <b data-umami-stat="visits">–</b></span>
-  </span>
+    <span class="goclub-umami-metric">浏览</span><b data-umami-stat="pageviews">–</b>
+    <span class="goclub-umami-metric">访客</span><b data-umami-stat="visitors">–</b>
+    <span class="goclub-umami-metric">访问</span><b data-umami-stat="visits">–</b>
+  </div>
 </div>
 {{ partial "docs/brand" . }}
 {{ partial "docs/search" . }}

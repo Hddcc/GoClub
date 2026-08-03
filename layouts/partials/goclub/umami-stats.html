@@ -32,23 +32,29 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
 }
-/* 侧边栏：顶部 brand 卡片上方，三行居中 */
+/* 侧边栏：顶部 brand 卡片上方，网格对齐 */
 .goclub-umami-stats--sidebar {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-size: 0.72rem;
   line-height: 1.4;
   margin: 0.15rem 0.15rem 0.7rem;
 }
-.goclub-umami-stats--sidebar .goclub-umami-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3px 7px;
+.goclub-umami-stats--sidebar .goclub-umami-grid {
+  display: grid;
+  grid-template-columns: auto repeat(3, auto minmax(2.2em, auto));
+  column-gap: 6px;
+  row-gap: 3px;
+  align-items: baseline;
   white-space: nowrap;
+}
+.goclub-umami-stats--sidebar .goclub-umami-grid b {
+  text-align: right;
+}
+.goclub-umami-stats--sidebar .goclub-umami-metric {
+  opacity: 0.85;
 }
 /* 移动端顶栏：右侧紧凑两行 */
 .goclub-umami-stats--mobile {
